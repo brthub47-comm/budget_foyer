@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Budget du foyer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:light;
+  --bg:#f6f7f9;--card:#ffffff;--tx:#14181f;--mut:#5f6773;--faint:#8b93a0;--ln:#e3e6eb;--track:#eceef2;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--neutral:#a3a9b3;
+  --pos:#2a78d6;--neg:#e34948;
+  --good:#0ca30c;--warn:#fab219;--serious:#ec835a;--crit:#d03b3b;--info:#2a78d6;
+  --goodtx:#0b7a0b;--warntx:#9a6700;--crittx:#b42f2f}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){color-scheme:dark;
+  --bg:#0f1318;--card:#161b22;--tx:#eceff3;--mut:#a3abb8;--faint:#7c8594;--ln:#262d37;--track:#222932;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--neutral:#5f6773;
+  --pos:#3987e5;--neg:#e66767;--goodtx:#52c196;--warntx:#e6ab45;--crittx:#ef7d72;--info:#3987e5}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0f1318;--card:#161b22;--tx:#eceff3;--mut:#a3abb8;--faint:#7c8594;--ln:#262d37;--track:#222932;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--neutral:#5f6773;
+  --pos:#3987e5;--neg:#e66767;--goodtx:#52c196;--warntx:#e6ab45;--crittx:#ef7d72;--info:#3987e5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 Manrope,system-ui,sans-serif}
+main{max-width:1120px;margin:auto;padding:24px 16px 64px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 20px;margin-bottom:8px}
+h1{font-size:1.15rem;margin:0;font-weight:700;letter-spacing:-.01em}
+h2{font-size:1rem;font-weight:700;margin:0 0 4px}
+h3{font-size:.9rem;font-weight:600;margin:0 0 8px}
+.mut{color:var(--mut)}.sm{font-size:.84rem}.xs{font-size:.76rem}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;color:inherit;background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:6px 10px}
+button{cursor:pointer}button:hover{border-color:var(--faint)}
+:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+nav{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 22px;border-bottom:1px solid var(--ln)}
+nav button{border:0;background:none;border-radius:0;padding:10px 12px;color:var(--mut);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--tx);border-bottom-color:var(--tx)}
+nav .badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--crit);color:#fff;font-size:.72rem;line-height:18px;text-align:center}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:18px 20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1.25fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}}
+.hero{font-size:clamp(2.4rem,7vw,3.6rem);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin:4px 0 6px}
+.kv{font-size:1.45rem;font-weight:700;letter-spacing:-.02em;margin:2px 0 0}
+.tile .lab{display:flex;align-items:center;gap:7px;color:var(--mut);font-size:.84rem}
+.key{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c)}
+.neg{color:var(--crittx)}
+.sec{margin-top:16px}
+ul.al{list-style:none;margin:0;padding:0}
+ul.al li{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:.92rem}
+ul.al li:last-child{border-bottom:0}
+.ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700;color:#fff;margin-top:1px}
+.ic.crit{background:var(--crit)}.ic.warn{background:var(--warn);color:#1a1300}.ic.info{background:var(--info)}.ic.good{background:var(--good)}
+.chart{position:relative}
+.cols{display:grid;grid-template-columns:44px 1fr;gap:6px}
+.yax{position:relative;font-size:.7rem;color:var(--faint);text-align:right}
+.yax span{position:absolute;right:0;transform:translateY(50%)}
+.plot{position:relative;border-bottom:1px solid var(--ln)}
+.gl{position:absolute;left:0;right:0;height:1px;background:var(--ln)}
+.bars{position:absolute;inset:0;display:grid;grid-template-columns:repeat(12,1fr)}
+.slot{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:2px;cursor:default;border-radius:6px}
+.slot:hover,.slot:focus{background:color-mix(in srgb,var(--tx) 5%,transparent)}
+.slot.sel{background:color-mix(in srgb,var(--tx) 8%,transparent)}
+.slot i{display:block;width:min(14px,34%);border-radius:4px 4px 0 0}
+.xl{display:grid;grid-template-columns:repeat(12,1fr);font-size:.72rem;color:var(--faint);text-align:center;margin-top:4px}
+.div .slot{align-items:stretch}
+.div .slot i{position:absolute;left:50%;transform:translateX(-50%);width:min(18px,44%)}
+.zero{position:absolute;left:0;right:0;height:1px;background:var(--faint)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--mut);margin:6px 0 10px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:9px 11px;font-size:.8rem;box-shadow:0 6px 24px rgba(0,0,0,.14);min-width:180px;display:none}
+.tip b{display:block;margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:14px}
+.seg{display:flex;gap:2px;height:28px;margin:10px 0 8px}
+.seg i{display:block;border-radius:4px;min-width:2px;position:relative;font-style:normal}
+.seg i span{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:600;color:var(--lc,#fff);white-space:nowrap}
+.row.brow{grid-template-columns:minmax(150px,230px) 1fr 250px}
+@media(max-width:640px){.row.brow{grid-template-columns:1fr auto}.row.brow .tr{grid-column:1/-1;order:3}}
+.g2.top{align-items:start}
+.stack{display:grid;gap:16px}
+.row{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr minmax(118px,auto);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--ln);font-size:.88rem}
+.row:last-child{border-bottom:0}
+.tr{position:relative;height:10px;background:var(--track);border-radius:5px}
+.tr i{position:absolute;left:0;top:0;height:100%;border-radius:5px}
+.tr u{position:absolute;top:-4px;height:18px;width:2px;background:var(--tx);border-radius:1px}
+.tr .en{background:color-mix(in srgb,var(--s1) 28%,var(--track))}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600;white-space:nowrap}
+.st::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.famh{margin:18px 0 2px;font-size:.78rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;font-weight:600;color:var(--mut);font-size:.78rem;padding:6px 6px;border-bottom:1px solid var(--ln)}
+td{padding:7px 6px;border-bottom:1px solid var(--ln);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+details summary{cursor:pointer;color:var(--mut);font-size:.84rem;margin-top:10px}
+.bridge .row{grid-template-columns:minmax(150px,1.3fr) 2.2fr minmax(100px,auto)}
+.bridge .tr{background:none;height:16px}
+.bridge .tr i{border-radius:4px}
+.tag{display:inline-block;font-size:.72rem;padding:1px 7px;border-radius:9px;border:1px solid var(--ln);color:var(--mut);margin-left:6px;white-space:nowrap}
+.month{margin-top:14px}
+.month h3{display:flex;justify-content:space-between;border-bottom:1px solid var(--ln);padding-bottom:5px}
+.ev{display:grid;grid-template-columns:62px 1fr auto;gap:8px;padding:6px 0;font-size:.88rem}
+.ev .d{color:var(--faint);font-size:.8rem}
+.empty{color:var(--mut);font-size:.9rem;padding:8px 0}
+dialog{border:1px solid var(--ln);border-radius:14px;background:var(--card);color:var(--tx);max-width:560px;width:94%;padding:20px 22px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog label{display:block;margin:12px 0 4px;font-size:.88rem;font-weight:600}
+dialog input[type=text]{width:100%}
+.drop{border:1.5px dashed var(--ln);border-radius:12px;padding:16px;text-align:center;margin-top:8px}
+.foot{margin-top:40px;font-size:.8rem;color:var(--faint)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div><h1>Budget du foyer</h1><div class="mut sm" id="src">Chargement…</div></div>
+  <div class="tools">
+    <select id="py" aria-label="Année"></select>
+    <select id="pm" aria-label="Mois"></select>
+    <button id="cfg">Données</button>
+  </div>
+</header>
+<nav id="nav" role="tablist">
+  <button data-v="o" class="on">Vue d'ensemble</button>
+  <button data-v="b">Budget</button>
+  <button data-v="m">Maison et vente</button>
+  <button data-v="e">À anticiper</button>
+  <button data-v="c">Contrôles<span class="badge" id="nbc" hidden></span></button>
+</nav>
+
+<section id="v-o"></section>
+<section id="v-b" hidden></section>
+<section id="v-m" hidden></section>
+<section id="v-e" hidden></section>
+<section id="v-c" hidden></section>
+<p class="foot">Les données restent dans votre navigateur : rien n'est envoyé ni enregistré ailleurs. Le code de cette page ne contient qu'un exemple fictif, aucune donnée personnelle.</p>
+</main>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <h2>Relier vos données</h2>
+    <p class="mut sm">Deux possibilités, au choix.</p>
+    <h3 style="margin-top:14px">1. Ouvrir un export du classeur</h3>
+    <p class="mut sm" style="margin:0">Dans Google Sheets : Fichier › Télécharger › Microsoft Excel (.xlsx). Rien n'est publié.</p>
+    <div class="drop"><input type="file" id="file" accept=".xlsx"></div>
+    <h3 style="margin-top:18px">2. Liens CSV publiés (mise à jour en direct)</h3>
+    <p class="mut sm" style="margin:0">Fichier › Partager › Publier sur le web : onglet « Journal » puis « Export », format CSV. Toute personne qui a ces liens peut lire les données.</p>
+    <label for="u1">Lien CSV de l'onglet Journal</label><input type="text" id="u1" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv">
+    <label for="u2">Lien CSV de l'onglet Export</label><input type="text" id="u2" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv">
+    <div style="display:flex;gap:8px;justify-content:space-between;margin-top:18px">
+      <button value="demo" id="bdemo">Revenir à l'exemple</button>
+      <span style="display:flex;gap:8px"><button value="x">Fermer</button><button value="ok" id="bsave">Enregistrer les liens</button></span>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const MS=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+const MN=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const FAM=['Logement','Transport','Enfants','Vie courante','Abonnements et banque','Impôts et taxes','Vacances','À catégoriser'];
+const FAMC=['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--s6)','var(--s7)','var(--neutral)'];
+const FAML=['#fff','#fff','#111','#111','#111','#fff','#fff','#111'];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+const eur=n=>(Math.round(n||0)).toLocaleString('fr-FR')+' €';
+const keur=n=>Math.abs(n)>=10000?(Math.round(n/1000)).toLocaleString('fr-FR')+' k€':eur(n);
+const sgn=n=>(n>0?'+':n<0?'−':'')+eur(Math.abs(n));
+function num(v){if(typeof v==='number')return v;let s=String(v??'').trim();if(!s||s==='–'||s==='-')return 0;
+  const pc=s.includes('%');s=s.replace(/[\s  €%]/g,'').replace('−','-');
+  if(s.includes(',')&&s.includes('.'))s=s.replace(/\./g,'').replace(',','.');else s=s.replace(',','.');
+  const x=parseFloat(s);return isNaN(x)?0:(pc?x/100:x)}
+function dt(v){if(v instanceof Date)return v;if(typeof v==='number'){if(v>20000&&v<90000){const d=new Date(Math.round((v-25569)*864e5));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}return null}
+  const s=String(v??'').trim();let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],m[2]-1,+m[1]);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],m[2]-1,+m[3]);return null}
+const fdate=d=>d?d.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}):'';
+const today=new Date();
+function csv(t){const r=[];let w=[],c='',q=false;for(let i=0;i<t.length;i++){const h=t[i];
+  if(q){if(h=='"'&&t[i+1]=='"'){c+='"';i++}else if(h=='"')q=false;else c+=h}
+  else if(h=='"')q=true;else if(h==','){w.push(c);c=''}else if(h=='\n'){w.push(c);r.push(w);w=[];c=''}else if(h!='\r')c+=h}
+  if(c||w.length){w.push(c);r.push(w)}return r}
+
+/* ---------- état ---------- */
+let D=null, cfg={u1:'',u2:''}, mode='demo';
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('budget-foyer')||'{}'))}catch(e){}
+
+/* ---------- modèle : à partir des lignes brutes du Journal et de l'onglet Export ---------- */
+function build(jRows,xRows,label){
+  const X={};xRows.forEach(r=>{const t=String(r[0]||'').trim();if(!t||t==='table')return;(X[t]=X[t]||[]).push(r)});
+  const has=(r,i)=>r[i]!==''&&r[i]!=null;
+  const CAT=(X.CAT||[]).filter(r=>has(r,1)).map(r=>({c:String(r[1]),f:String(r[2]),t:String(r[3]),n:String(r[4]),b:r.slice(6,18).map(num)}));
+  const cm={};CAT.forEach(c=>cm[c.c]=c);
+  const CPT=(X.CPT||[]).filter(r=>has(r,1)).map(r=>({c:String(r[1]),tit:String(r[2]),typ:String(r[3]),dispo:String(r[4]),s0:num(r[6]),s1:num(r[7]),s1set:has(r,7)}));
+  const ow={};CPT.forEach(c=>ow[c.c]=c.tit);
+  const PRJ=(X.PRJ||[]).filter(r=>has(r,1)).map(r=>({p:String(r[1]),env:String(r[2]),prio:String(r[3]),st:String(r[4]),fin:String(r[5]),bud:num(r[6]),budset:has(r,6),eng:num(r[7]),paye:num(r[8]),reste:num(r[9]),av:num(r[10]),cout:num(r[11])}));
+  const ENV=(X.ENV||[]).filter(r=>has(r,1)).map(r=>({e:String(r[1]),amt:num(r[6]),bud:num(r[7]),eng:num(r[8]),paye:num(r[9]),reste:num(r[10]),marge:num(r[11]),nc:num(r[12])}));
+  const ECH=(X.ECH||[]).filter(r=>has(r,1)).map(r=>({lib:String(r[1]),nat:String(r[2]),cat:String(r[3]),cert:String(r[4]),st:String(r[5]),d:dt(r[6]),mt:num(r[7]),prov:num(r[9])})).filter(e=>e.d);
+  const AVA=(X.AVA||[]).filter(r=>has(r,1)).map(r=>({w:String(r[1]),j:num(r[6]),a:num(r[7]),tot:num(r[8]),rb:num(r[9]),re:num(r[10])}));
+  const AVQ=(X.AVQ||[]).filter(r=>has(r,3)).map(r=>({w:String(r[1]),cpt:String(r[2]),obj:String(r[3]),q:String(r[4]),d:dt(r[6]),mt:num(r[7])}));
+  const DET=(X.DET||[]).filter(r=>has(r,1)).map(r=>({p:String(r[1]),b:String(r[2]),mens:num(r[6]),crd:num(r[7])}));
+  const V={},VT={};(X.VEN||[]).forEach(r=>{V[r[1]]=r[6];VT[r[1]]=r[2];if(has(r,3))V[r[1]]=r[3]});
+  const P={};(X.PAR||[]).forEach(r=>P[r[1]]=num(r[6]));
+  ['debut','fin','vente','demenag','ideal','limite'].forEach(k=>V[k]=dt(V[k]));
+  Object.keys(V).forEach(k=>{if(!(V[k] instanceof Date)&&k!=='franchise')V[k]=num(V[k])});
+  const J=jRows.map(o=>{const g=k=>{const h=Object.keys(o).find(x=>x===k)||Object.keys(o).find(x=>x.startsWith(k));return h?o[h]:''};
+    const d=dt(g('date')),c=String(g('categorie')||'').trim(),cp=String(g('compte')||'').trim();
+    const per=num(g('periode'))||(d?d.getFullYear()*100+d.getMonth()+1:0);
+    return {d,lib:String(g('libelle')||''),m:num(g('montant')),c,cpt:cp,av:String(g('avance de')||'').trim(),prj:String(g('projet')||'').trim(),
+      just:String(g('justificatif')||''),note:String(g('note')||''),per,f:String(g('famille')||'')||(cm[c]||{}).f||'?',t:String(g('type')||'')||(cm[c]||{}).t||'?',
+      by:String(g('paye par')||'')||ow[cp]||'',ctl:String(g('controle')||'').trim()}}).filter(x=>x.m||x.lib);
+  return {J,CAT,cm,CPT,PRJ,ENV,ECH,AVA,AVQ,DET,V,VT,P,label};
+}
+
+/* ---------- chargement ---------- */
+async function load(){
+  try{
+    if(cfg.u1&&cfg.u2){
+      const [a,b]=await Promise.all([cfg.u1,cfg.u2].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()})));
+      const ja=csv(a),h=ja[0].map(norm);
+      D=build(ja.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]]))),csv(b),'Données de votre Google Sheet (liens publiés).');mode='csv';
+    }else{D=demo();mode='demo'}
+  }catch(e){D=demo();mode='demo';D.label='Liens illisibles, retour à l\'exemple. Vérifiez la publication des onglets Journal et Export.'}
+  init();
+}
+async function readFile(f){
+  if(!window.XLSX){await new Promise((ok,ko)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=ko;document.head.appendChild(s)})}
+  const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+  const sh=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});
+  if(!wb.Sheets.Journal||!wb.Sheets.Export)throw new Error('Onglets Journal et Export introuvables');
+  const ja=sh('Journal'),h=ja[0].map(norm);
+  D=build(ja.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]]))),sh('Export'),'Fichier ouvert : '+f.name+' (non enregistré).');mode='file';init();
+}
+
+/* ---------- période ---------- */
+let SEL={y:0,m:0};
+function years(){return [...new Set(D.J.map(x=>Math.floor(x.per/100)).filter(y=>y>2000))].sort()}
+function lastMonth(y){return Math.max(0,...D.J.filter(x=>Math.floor(x.per/100)===y).map(x=>x.per%100))}
+function range(){const lm=lastMonth(SEL.y)||1;return SEL.m?[SEL.y*100+SEL.m,SEL.y*100+SEL.m,1]:[SEL.y*100+1,SEL.y*100+lm,lm]}
+const inR=(x,r)=>x.per>=r[0]&&x.per<=r[1];
+const sumT=(t,r)=>D.J.filter(x=>x.t===t&&inR(x,r)).reduce((a,x)=>a+x.m,0);
+function init(){
+  $('#src').textContent=D.label;
+  const ys=years();SEL.y=ys[ys.length-1]||today.getFullYear();
+  $('#py').innerHTML=ys.map(y=>`<option ${y===SEL.y?'selected':''}>${y}</option>`).join('');
+  fillMonths();render();
+}
+function fillMonths(){const lm=lastMonth(SEL.y);
+  $('#pm').innerHTML=`<option value="0">Année ${SEL.y}${lm?' (jan.–'+MS[lm-1].toLowerCase()+')':''}</option>`+MS.map((m,i)=>`<option value="${i+1}" ${i+1>lm?'disabled':''}>${MN[i][0].toUpperCase()+MN[i].slice(1)}</option>`).join('');
+  $('#pm').value=String(SEL.m)}
+$('#py').onchange=e=>{SEL.y=+e.target.value;SEL.m=0;fillMonths();render()};
+$('#pm').onchange=e=>{SEL.m=+e.target.value;render()};
+
+/* ---------- calculs ---------- */
+function monthly(y){return MS.map((_,i)=>{const p=y*100+i+1,r=[p,p];const rev=sumT('Revenu',r),cou=sumT('Courant',r),ep=sumT('Épargne',r),ex=sumT('Exceptionnel',r);
+  return {m:i+1,rev,cou,ep,ex,sol:rev-cou-ep-ex,bud:D.CAT.filter(c=>c.t==='Courant').reduce((a,c)=>a+c.b[i],0),has:D.J.some(x=>x.per===p)}})}
+function budgetRows(r){const ms=[];for(let p=r[0];p<=r[1];p++)ms.push(p%100);
+  return D.CAT.filter(c=>c.t==='Courant').map(c=>{const b=ms.reduce((a,m)=>a+(c.b[m-1]||0),0),re=D.J.filter(x=>x.c===c.c&&inR(x,r)).reduce((a,x)=>a+x.m,0);
+    const st=!b?(re>0.5?'hors':''):(re>1.05*b?'dep':re>b?'lim':'ok');return {...c,bud:b,re,st}})}
+const STAT={ok:['OK','var(--good)'],lim:['Limite','var(--warn)'],dep:['Dépassé','var(--crit)'],hors:['Hors budget','var(--serious)']};
+
+function alerts(){
+  const r=range(),A=[],rev=sumT('Revenu',r),cou=sumT('Courant',r),ep=sumT('Épargne',r),ex=sumT('Exceptionnel',r),sol=rev-cou-ep-ex;
+  const per=SEL.m?MN[SEL.m-1]+' '+SEL.y:'depuis janvier';
+  if(sol<0)A.push(['crit',`Sorties supérieures aux entrées de ${eur(-sol)} ${per} : l'écart est pris sur l'épargne.`,'o']);
+  if(cou>rev)A.push(['crit',`Même sans l'épargne ni les travaux, les dépenses courantes dépassent les revenus de ${eur(cou-rev)}.`,'o']);
+  const lm=lastMonth(SEL.y);
+  D.CAT.filter(c=>c.t==='Revenu'&&c.b.some(v=>v>0)&&c.n!=='Annuel').forEach(c=>{const bad=[];for(let m=1;m<=lm;m++){const p=SEL.y*100+m;const v=D.J.filter(x=>x.c===c.c&&x.per===p).reduce((a,x)=>a+x.m,0);if(v<=0)bad.push(MN[m-1])}
+    if(bad.length)A.push(['warn',`${c.c} : rien ou un montant négatif en ${bad.join(', ')}. Saisie à vérifier.`,'c'])});
+  const br=budgetRows(r).filter(b=>b.st==='dep').sort((a,b)=>(b.re-b.bud)-(a.re-a.bud));
+  if(br.length)A.push(['warn',`${br.length} catégorie${br.length>1?'s dépassent':' dépasse'} leur budget : ${br.slice(0,3).map(b=>b.c+' (+'+eur(b.re-b.bud)+')').join(', ')}${br.length>3?'…':''}.`,'b']);
+  const nc=D.J.filter(x=>x.ctl).length;if(nc)A.push(['warn',`${nc} ligne${nc>1?'s':''} du Journal à contrôler (doublons, catégories, avances non signalées).`,'c']);
+  const V=D.V;
+  if(V.reste_relais!=null&&V.capital){const n=V.reste_relais;A.push([n<=4?'crit':n<=8?'warn':'info',`Fin du prêt relais dans ${n} mois (${fdate(V.fin)}). Chaque mois sans vente coûte environ ${eur(V.portage)}.`,'m'])}
+  if(V.ideal&&V.ideal>today){const n=Math.round((V.ideal-today)/(30.4*864e5));A.push([n<=6?'warn':'info',`Pour garder l'exonération de plus-value, viser une vente signée avant le ${fdate(V.ideal)} (${n} mois), sans louer la maison entre-temps.`,'m'])}
+  if(V.marge<0)A.push(['warn',`Au prix et à la date prévus, la vente laisse ${eur(V.dispo)} pour les travaux, soit ${eur(-V.marge)} de moins que l'enveloppe.`,'m']);
+  const tot=D.AVA.reduce((a,x)=>a+x.re,0);if(tot>0)A.push(['info',`Avances à rembourser : ${D.AVA.filter(a=>a.re>0).map(a=>a.w+' '+eur(a.re)).join(', ')}.`,'m']);
+  const q=D.AVQ.filter(a=>norm(a.q)==='a decider');if(q.length)A.push(['warn',`${q.length} baisse${q.length>1?'s':''} d'épargne de ${q[0].d?q[0].d.getFullYear():''} à qualifier ensemble : avance à rembourser ou contribution ?`,'m']);
+  const nch=D.ENV.reduce((a,e)=>a+e.nc,0);if(nch)A.push(['warn',`${nch} projets de travaux ne sont pas chiffrés : l'enveloppe ne peut pas encore être vérifiée.`,'m']);
+  if(D.P.provision>D.P.lissage)A.push(['warn',`${eur(D.P.total12)} de grosses dépenses d'ici 12 mois : il faudrait provisionner ${eur(D.P.provision)} par mois dès maintenant, contre ${eur(D.P.lissage)} aujourd'hui.`,'e']);
+  if(D.P.mois_couverts&&D.P.mois_couverts<3)A.push(['warn',`L'épargne disponible couvre ${D.P.mois_couverts.toLocaleString('fr-FR',{maximumFractionDigits:1})} mois de dépenses courantes (repère : 3 à 6 mois).`,'o']);
+  const ord={crit:0,warn:1,info:2,good:3};A.sort((a,b)=>ord[a[0]]-ord[b[0]]);
+  return A;
+}
+const ICON={crit:'!',warn:'!',info:'i',good:'✓'};
+const alertList=A=>A.length?`<ul class="al">${A.map(a=>`<li><span class="ic ${a[0]}" aria-label="${a[0]==='crit'?'Critique':a[0]==='warn'?'À surveiller':'Information'}">${ICON[a[0]]}</span><span>${esc(a[1])}</span></li>`).join('')}</ul>`:`<ul class="al"><li><span class="ic good">✓</span><span>Rien à signaler.</span></li></ul>`;
+
+/* ---------- graphiques ---------- */
+function ticks(max){const raw=max/4,p=Math.pow(10,Math.floor(Math.log10(raw||1))),s=[1,2,2.5,5,10].map(x=>x*p).find(x=>x>=raw)||p;const out=[];for(let v=0;v<=max+1e-9;v+=s)out.push(v);if(out[out.length-1]<max)out.push(out[out.length-1]+s);return out}
+const tk=v=>Math.abs(v)>=10000?(v/1000).toLocaleString('fr-FR')+' k':v.toLocaleString('fr-FR');
+function colChart(M,h=190){
+  const mx=Math.max(1,...M.map(x=>Math.max(x.rev,x.cou))),T=ticks(mx),top=T[T.length-1];
+  return `<div class="chart"><div class="lg"><span><i class="key" style="--c:var(--s1)"></i>Revenus</span><span><i class="key" style="--c:var(--s2)"></i>Dépenses courantes</span></div>
+  <div class="cols"><div class="yax" style="height:${h}px">${T.map(v=>`<span style="bottom:${v/top*100}%">${tk(v)}</span>`).join('')}</div>
+  <div><div class="plot" style="height:${h}px">${T.slice(1).map(v=>`<div class="gl" style="bottom:${v/top*100}%"></div>`).join('')}
+  <div class="bars">${M.map(x=>`<div class="slot ${SEL.m===x.m?'sel':''}" tabindex="0" data-m="${x.m}" data-tip="mo">${x.has?`<i style="height:${Math.max(0,x.rev)/top*100}%;background:var(--s1)"></i><i style="height:${x.cou/top*100}%;background:var(--s2)"></i>`:''}</div>`).join('')}</div></div>
+  <div class="xl">${MS.map(m=>`<span>${m}</span>`).join('')}</div></div></div></div>`}
+function divChart(M,h=130){
+  const mx=Math.max(1,...M.map(x=>Math.abs(x.sol))),T=ticks(mx),top=T[T.length-1],z=50;
+  return `<div class="chart div"><div class="cols"><div class="yax" style="height:${h}px"><span style="bottom:${z+50}%">+${tk(top)}</span><span style="bottom:${z}%">0</span><span style="bottom:0">−${tk(top)}</span></div>
+  <div><div class="plot" style="height:${h}px;border-bottom:0"><div class="zero" style="bottom:${z}%"></div>
+  <div class="bars">${M.map(x=>{if(!x.has)return `<div class="slot"></div>`;const hh=Math.abs(x.sol)/top*50;
+    return `<div class="slot ${SEL.m===x.m?'sel':''}" tabindex="0" data-m="${x.m}" data-tip="mo"><i style="${x.sol>=0?`bottom:${z}%;border-radius:4px 4px 0 0`:`top:${100-z}%;border-radius:0 0 4px 4px`};height:${hh}%;background:${x.sol>=0?'var(--pos)':'var(--neg)'}"></i></div>`}).join('')}</div></div>
+  <div class="xl">${MS.map(m=>`<span>${m}</span>`).join('')}</div></div></div></div>`}
+function tipMonth(m){const x=MONTHS[m-1];if(!x||!x.has)return '';
+  return `<b>${MN[m-1][0].toUpperCase()+MN[m-1].slice(1)} ${SEL.y}</b>
+  <div class="r"><span><i class="key" style="--c:var(--s1)"></i> Revenus</span><span>${eur(x.rev)}</span></div>
+  <div class="r"><span><i class="key" style="--c:var(--s2)"></i> Dépenses courantes</span><span>${eur(x.cou)}</span></div>
+  <div class="r mut"><span>Budget courant</span><span>${eur(x.bud)}</span></div>
+  <div class="r"><span>Épargne versée</span><span>${eur(x.ep)}</span></div>
+  <div class="r"><span>Projets maison</span><span>${eur(x.ex)}</span></div>
+  <div class="r" style="border-top:1px solid var(--ln);margin-top:4px;padding-top:4px"><b style="margin:0">Solde</b><b style="margin:0" class="${x.sol<0?'neg':''}">${sgn(x.sol)}</b></div>`}
+let MONTHS=[];
+const tip=$('#tip');
+document.addEventListener('pointerover',e=>{const s=e.target.closest('[data-tip]');if(!s){tip.style.display='none';return}
+  const h=s.dataset.tip==='mo'?tipMonth(+s.dataset.m):s.dataset.tipHtml;if(!h){tip.style.display='none';return}tip.innerHTML=h;tip.style.display='block'});
+document.addEventListener('pointermove',e=>{if(tip.style.display!=='block')return;const w=tip.offsetWidth,x=e.clientX+14+w>innerWidth?e.clientX-w-14:e.clientX+14;tip.style.left=x+'px';tip.style.top=Math.min(e.clientY+12,innerHeight-tip.offsetHeight-8)+'px'});
+document.addEventListener('focusin',e=>{const s=e.target.closest('[data-tip]');if(!s)return;const h=s.dataset.tip==='mo'?tipMonth(+s.dataset.m):s.dataset.tipHtml;if(!h)return;tip.innerHTML=h;const b=s.getBoundingClientRect();tip.style.display='block';tip.style.left=Math.min(b.right+8,innerWidth-tip.offsetWidth-8)+'px';tip.style.top=b.top+'px'});
+document.addEventListener('focusout',()=>tip.style.display='none');
+document.addEventListener('click',e=>{const s=e.target.closest('.slot[data-m]');if(!s)return;const m=+s.dataset.m;SEL.m=SEL.m===m?0:m;$('#pm').value=String(SEL.m);render()});
+
+/* ---------- vues ---------- */
+function vOverview(){
+  const r=range(),rev=sumT('Revenu',r),cou=sumT('Courant',r),ep=sumT('Épargne',r),ex=sumT('Exceptionnel',r),sol=rev-cou-ep-ex,n=r[2];
+  const per=SEL.m?MN[SEL.m-1]+' '+SEL.y:'de janvier à '+MN[(lastMonth(SEL.y)||1)-1]+' '+SEL.y;
+  const credits=D.J.filter(x=>(x.c==='Crédits immobiliers'||x.c==='Crédit auto et LOA')&&inR(x,r)).reduce((a,x)=>a+x.m,0);
+  const tile=(lab,v,c,sub)=>`<div class="card tile"><div class="lab">${c?`<i class="key" style="--c:${c}"></i>`:''}${lab}</div><p class="kv ${v<0?'neg':''}">${eur(v)}</p><div class="mut xs">${sub||''}</div></div>`;
+  const up=D.ECH.filter(e=>e.d>=new Date(today.getFullYear(),today.getMonth(),1)&&(e.d-today)/864e5<=92&&norm(e.st)!=='paye'&&norm(e.st)!=='fait').sort((a,b)=>a.d-b.d);
+  $('#v-o').innerHTML=`
+  <div class="grid g2 top"><div class="stack">
+    <div class="card"><div class="mut sm">Solde ${esc(per)}</div><p class="hero ${sol<0?'neg':''}">${sgn(sol)}</p>
+      <div class="mut sm">Revenus − dépenses courantes − épargne versée − projets maison. ${n>1?`Soit ${sgn(sol/n)} par mois en moyenne.`:''}</div>
+      <div class="grid g4 sec" style="gap:10px">
+        <div><div class="mut xs">Capacité d'épargne</div><b class="${rev-cou<0?'neg':''}">${sgn(rev-cou)}</b></div>
+        <div><div class="mut xs">Taux d'endettement</div><b class="${credits/rev>.35?'neg':''}">${rev>0?Math.round(credits/rev*100)+' %':'–'}</b></div>
+        <div><div class="mut xs">Taux d'épargne</div><b>${rev>0?Math.round(ep/rev*100)+' %':'–'}</b></div>
+        <div><div class="mut xs">Dépenses courantes / mois</div><b>${eur(cou/n)}</b></div>
+      </div></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr">${tile('Revenus',rev,'var(--s1)',n>1?eur(rev/n)+' / mois':'')}${tile('Dépenses courantes',cou,'var(--s2)',n>1?eur(cou/n)+' / mois':'')}${tile('Épargne versée',ep,'var(--s3)','AV, PER, livrets')}${tile('Projets maison',ex,'var(--s7)','Travaux, installation, frais')}</div>
+    </div>
+    <div class="card"><h2>Points d'attention</h2>${alertList(alerts())}</div>
+  </div>
+  <div class="grid g2 top sec">
+    <div class="card"><h2>Revenus et dépenses courantes, mois par mois</h2><p class="mut sm" style="margin:0">Survolez un mois pour le détail, cliquez pour le sélectionner.</p>${colChart(MONTHS)}
+      <h3 style="margin-top:18px">Solde du mois <span class="mut xs" style="font-weight:400">(après épargne et projets)</span></h3>${divChart(MONTHS)}
+      <details><summary>Voir le tableau</summary><table><tr><th>Mois</th><th class="n">Revenus</th><th class="n">Courant</th><th class="n">Épargne</th><th class="n">Projets</th><th class="n">Solde</th></tr>
+      ${MONTHS.filter(x=>x.has).map(x=>`<tr><td>${MS[x.m-1]}</td><td class="n">${eur(x.rev)}</td><td class="n">${eur(x.cou)}</td><td class="n">${eur(x.ep)}</td><td class="n">${eur(x.ex)}</td><td class="n ${x.sol<0?'neg':''}">${sgn(x.sol)}</td></tr>`).join('')}</table></details></div>
+    <div class="card"><h2>À anticiper dans les 3 mois</h2>
+      ${up.length?up.map(e=>`<div class="ev"><span class="d">${e.d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</span><span>${esc(e.lib)}${e.nat==='Action'?'<span class="tag">action</span>':''}${norm(e.cert)==='a verifier'?'<span class="tag">à vérifier</span>':''}</span><span class="val">${e.mt?(e.nat==='Entrée'?'+':'')+eur(e.mt):''}</span></div>`).join(''):'<p class="empty">Rien dans les 3 prochains mois.</p>'}
+      <p class="mut sm" style="margin-top:12px">Provision conseillée : <b>${eur(D.P.provision)}</b> / mois · mis de côté aujourd'hui : <b>${eur(D.P.lissage)}</b></p></div>
+  </div>`;
+}
+function vBudget(){
+  const r=range(),B=budgetRows(r).filter(b=>b.bud||Math.abs(b.re)>.5);
+  const fam=FAM.map((f,i)=>({f,c:FAMC[i],lc:FAML[i],v:D.J.filter(x=>x.t==='Courant'&&x.f===f&&inR(x,r)).reduce((a,x)=>a+x.m,0)})).filter(x=>x.v>0.5),tot=fam.reduce((a,x)=>a+x.v,0)||1;
+  const mx=Math.max(1,...B.map(b=>Math.max(b.bud,b.re)));
+  const per=SEL.m?MN[SEL.m-1]+' '+SEL.y:'de janvier à '+MN[(lastMonth(SEL.y)||1)-1]+' '+SEL.y;
+  const tb=B.reduce((a,b)=>a+b.bud,0),tr=B.reduce((a,b)=>a+b.re,0);
+  $('#v-b').innerHTML=`
+  <div class="card"><h2>Où part l'argent du quotidien</h2><p class="mut sm" style="margin:0">Dépenses courantes ${esc(per)} : ${eur(tr)} pour un budget de ${eur(tb)} (${tr>tb?'+':''}${eur(tr-tb)}).</p>
+    <div class="seg" role="img" aria-label="Répartition des dépenses courantes par famille">${fam.map(x=>{const w=x.v/tot*100;return `<i style="width:${w}%;background:${x.c};--lc:${x.lc}" data-tip="h" data-tip-html="${esc(`<b>${x.f}</b><div class='r'><span>Montant</span><span>${eur(x.v)}</span></div><div class='r'><span>Part</span><span>${Math.round(w)} %</span></div>`)}">${w>9?`<span>${Math.round(w)} %</span>`:''}</i>`}).join('')}</div>
+    <div class="lg">${fam.map(x=>`<span><i class="key" style="--c:${x.c}"></i>${esc(x.f)} · ${eur(x.v)}</span>`).join('')}</div></div>
+  <div class="card sec"><h2>Budget et réel par catégorie</h2><p class="mut sm" style="margin:0 0 6px">Barre : dépensé. Trait : budget de la période (chaque ligne a sa propre échelle). Le budget se règle dans l'onglet Budget du classeur.</p>
+    ${FAM.map(f=>{const rows=B.filter(b=>b.f===f);if(!rows.length)return '';return `<div class="famh">${esc(f)}</div>`+rows.map(b=>{const s=STAT[b.st]||['','var(--neutral)'];
+      const mx=Math.max(b.bud,b.re,1)*1.15;
+      return `<div class="row brow"><span>${esc(b.c)}</span><div class="tr" data-tip="h" data-tip-html="${esc(`<b>${b.c}</b><div class='r'><span>Dépensé</span><span>${eur(b.re)}</span></div><div class='r'><span>Budget</span><span>${eur(b.bud)}</span></div><div class='r'><span>Écart</span><span>${sgn(b.re-b.bud)}</span></div>`)}"><i style="width:${Math.max(0,b.re)/mx*100}%;background:${s[1]}"></i>${b.bud?`<u style="left:calc(${b.bud/mx*100}% - 1px)"></u>`:''}</div>
+      <span class="val">${eur(b.re)} <span class="mut xs">/ ${eur(b.bud)}</span>${s[0]?` <span class="st" style="--c:${s[1]}">${s[0]}</span>`:''}</span></div>`}).join('')}).join('')}
+  </div>`;
+}
+function bridge(V){
+  const prix=V.prix||0;if(!prix)return '<p class="empty">Paramètres de vente absents.</p>';
+  const steps=[['Prix de vente',0,prix,'var(--s1)',prix],['Prêt relais et intérêts',prix-V.relais,prix,'var(--neg)',-V.relais],['Frais d\'agence et autres',prix-V.relais-(V.agence+V.autres+V.ira),prix-V.relais,'var(--neg)',-(V.agence+V.autres+V.ira)],
+    ['Produit net',0,V.net,'var(--s1)',V.net],['Avances à rembourser',V.net-V.w_av,V.net,'var(--neg)',-V.w_av],['Devis signés à payer',V.net-V.w_av-V.w_eng,V.net-V.w_av,'var(--neg)',-V.w_eng],
+    ['Réserve de sécurité',V.dispo,V.dispo+V.w_res,'var(--neg)',-V.w_res],['Disponible pour les travaux',0,V.dispo,V.dispo>=V.env?'var(--good)':'var(--warn)',V.dispo]];
+  const sc=Math.max(V.net,V.env,1)*1.08,fees=(V.agence||0)+(V.autres||0)+(V.ira||0);
+  return `<p class="mut sm" style="margin:0 0 6px">${eur(prix)} de prix − ${eur(V.relais)} de prêt relais et intérêts${fees?` − ${eur(fees)} de frais`:''} = ${eur(V.net)} de produit net, puis :</p><div class="bridge">${steps.map((s,i)=>{if(i===0||i===1||i===2)return '';const a=Math.max(0,s[1]),b=Math.max(0,s[2]);
+    return `<div class="row"><span class="${s[0]==='Produit net'||s[0].startsWith('Disponible')?'':'mut'}">${s[0]==='Produit net'||s[0].startsWith('Disponible')?'<b>'+s[0]+'</b>':s[0]}</span><div class="tr"><i style="left:${a/sc*100}%;width:${Math.max(.4,(b-a)/sc*100)}%;background:${s[3]}"></i>${s[0].startsWith('Disponible')?`<u style="left:calc(${V.env/sc*100}% - 1px)" title="Enveloppe"></u>`:''}</div><span class="val">${s[4]<0?'−'+eur(-s[4]):eur(s[4])}</span></div>`}).join('')}</div>
+  <p class="mut sm" style="margin:8px 0 0">Trait : enveloppe travaux de ${eur(V.env)}. ${V.marge<0?`<b class="neg">Il manque ${eur(-V.marge)}</b> : prix minimum pour tout financer ${eur(V.prixmin)}.`:`Marge : ${eur(V.marge)}.`}</p>`;
+}
+function vMaison(){
+  const V=D.V,P=D.PRJ.filter(p=>/^phase/i.test(p.env)),aq=D.AVQ;
+  const sens=[-.1,-.05,0,.05].map(pc=>[0,3,6,12].map(dl=>{const n=(V.mois||0)+dl,int=norm(V.franchise)==='oui'?V.capital*(Math.pow(1+V.taux/12,n)-1):0;return V.prix*(1+pc)-V.agence-V.autres-V.ira-(V.capital+int)}));
+  const envs=D.ENV;
+  $('#v-m').innerHTML=`
+  <div class="grid g2">
+    <div class="card"><div class="mut sm">Disponible pour les travaux après la vente</div><p class="hero">${eur(V.dispo)}</p>
+      <div class="mut sm">Vente à ${eur(V.prix)} signée le ${fdate(V.vente)}${norm(V.franchise)==='oui'?', intérêts du relais capitalisés':''}. Hypothèses à confirmer dans l'onglet Vente.</div>
+      <div class="sec">${bridge(V)}</div></div>
+    <div class="card"><h2>Le temps compte</h2>
+      <div class="grid g2" style="grid-template-columns:1fr 1fr;gap:14px;margin-top:10px">
+        <div><div class="mut xs">Coût d'un mois sans vente</div><p class="kv">${eur(V.portage)}</p><div class="mut xs">dont ${eur(V.p_int)} d'intérêts</div></div>
+        <div><div class="mut xs">Fin du prêt relais</div><p class="kv ${V.reste_relais<=4?'neg':''}">${V.reste_relais!=null?V.reste_relais+' mois':'–'}</p><div class="mut xs">${fdate(V.fin)}</div></div>
+        <div><div class="mut xs">Vente idéale avant le</div><p class="kv" style="font-size:1.1rem">${fdate(V.ideal)}</p><div class="mut xs">exonération de plus-value</div></div>
+        <div><div class="mut xs">Prix minimum pour tout financer</div><p class="kv" style="font-size:1.1rem">${eur(V.prixmin)}</p><div class="mut xs">enveloppe + avances + réserve</div></div>
+      </div>
+      <h3 style="margin-top:18px">Produit net selon le prix et le retard</h3>
+      <table><tr><th>Prix</th>${[0,3,6,12].map(d=>`<th class="n">${d?'+'+d+' mois':'à la date'}</th>`).join('')}</tr>
+      ${[-.1,-.05,0,.05].map((pc,i)=>`<tr><td>${pc?((pc>0?'+':'−')+Math.abs(pc*100)+' %'):'estimé'}</td>${sens[i].map(v=>`<td class="n ${v<V.env?'mut':''}">${keur(v)}</td>`).join('')}</tr>`).join('')}</table>
+      <p class="mut xs" style="margin-top:6px">En gris : moins que l'enveloppe travaux (${eur(V.env)}).</p></div>
+  </div>
+  <div class="grid g2 sec">
+    <div class="card"><h2>Enveloppe travaux</h2>
+      ${envs.map(e=>{const s=Math.max(e.amt,e.amt-e.marge,1);return `<div class="row" style="grid-template-columns:90px 2fr minmax(150px,auto)"><b>${esc(e.e)}</b><div class="tr" data-tip="h" data-tip-html="${esc(`<b>${e.e}</b><div class='r'><span>Enveloppe</span><span>${eur(e.amt)}</span></div><div class='r'><span>Coût estimé connu</span><span>${eur(e.amt-e.marge)}</span></div><div class='r'><span>Déjà payé</span><span>${eur(e.paye)}</span></div><div class='r'><span>Projets non chiffrés</span><span>${e.nc}</span></div>`)}"><i class="en" style="width:${(e.amt-e.marge)/s*100}%"></i><i style="width:${e.paye/s*100}%;background:var(--s1)"></i><u style="left:calc(${e.amt/s*100}% - 1px)"></u></div><span class="val">${eur(e.amt-e.marge)} <span class="mut xs">/ ${eur(e.amt)}</span>${e.nc?`<span class="tag">${e.nc} à chiffrer</span>`:''}</span></div>`}).join('')}
+      <p class="mut xs" style="margin:6px 0 10px">Bleu foncé : payé · bleu clair : coût estimé connu (budget ou devis) · trait : enveloppe.</p>
+      ${P.map(p=>{const s=Math.max(p.cout,1);return `<div class="row"><span>${esc(p.p)}<br><span class="mut xs">${esc(p.env)} · ${esc(p.prio)} · ${esc(p.st)}</span></span>${p.cout?`<div class="tr"><i class="en" style="width:100%"></i><i style="width:${p.paye/s*100}%;background:var(--s1)"></i></div>`:'<span class="mut xs">non chiffré</span>'}<span class="val">${p.cout?eur(p.cout):'–'}${p.av?`<br><span class="mut xs">dont ${eur(p.av)} avancés</span>`:''}</span></div>`}).join('')}</div>
+    <div class="card"><h2>Avances entre vous</h2>
+      ${D.AVA.map(a=>`<div class="row" style="grid-template-columns:100px 1fr auto"><b>${esc(a.w)}</b><span class="mut sm">avancé ${eur(a.tot)} · remboursé ${eur(a.rb)}</span><span class="val"><b>${eur(a.re)}</b></span></div>`).join('')}
+      <p class="mut sm">Reste dû au total : <b>${eur(D.AVA.reduce((s,a)=>s+a.re,0))}</b>, remboursé en priorité sur le produit de la vente.</p>
+      <h3 style="margin-top:16px">À qualifier ensemble</h3>
+      ${aq.length?`<table><tr><th>Objet</th><th>Prêteur</th><th class="n">Montant</th><th>Décision</th></tr>${aq.map(a=>`<tr><td>${esc(a.obj)}</td><td>${esc(a.w)}</td><td class="n">${eur(a.mt)}</td><td>${norm(a.q)==='oui'?'<span class="st" style="--c:var(--s1)">Avance</span>':norm(a.q)==='non'?'<span class="st" style="--c:var(--neutral)">Contribution</span>':'<span class="st" style="--c:var(--warn)">À décider</span>'}</td></tr>`).join('')}</table>`:'<p class="empty">Rien à qualifier.</p>'}
+      <h3 style="margin-top:16px">Dettes</h3>
+      <table><tr><th>Prêt</th><th class="n">Mensualité</th><th class="n">Restant dû</th></tr>${D.DET.map(d=>`<tr><td>${esc(d.p)}<br><span class="mut xs">${esc(d.b)}</span></td><td class="n">${eur(d.mens)}</td><td class="n">${d.crd?eur(d.crd):'–'}</td></tr>`).join('')}</table></div>
+  </div>`;
+}
+function vEch(){
+  const start=new Date(today.getFullYear(),today.getMonth(),1),months=[];
+  for(let i=0;i<13;i++){const d=new Date(start.getFullYear(),start.getMonth()+i,1);months.push({y:d.getFullYear(),m:d.getMonth(),items:[]})}
+  D.ECH.forEach(e=>{const k=months.find(x=>x.y===e.d.getFullYear()&&x.m===e.d.getMonth());if(k)k.items.push(e)});
+  const late=D.ECH.filter(e=>e.d<start&&!['paye','fait'].includes(norm(e.st)));
+  const out=months.map(x=>x.items.filter(e=>e.nat==='Dépense').reduce((a,e)=>a+e.mt,0)),mx=Math.max(1,...out),T=ticks(mx),top=T[T.length-1],h=150;
+  $('#v-e').innerHTML=`
+  <div class="grid g3">
+    <div class="card"><div class="mut sm">Grosses dépenses d'ici 12 mois</div><p class="kv">${eur(D.P.total12)}</p><div class="mut xs">soit ${eur(D.P.total12/12)} par mois en lissant</div></div>
+    <div class="card"><div class="mut sm">Provision à verser dès maintenant</div><p class="kv ${D.P.provision>D.P.lissage?'neg':''}">${eur(D.P.provision)} / mois</p><div class="mut xs">pour être prêt à chaque échéance</div></div>
+    <div class="card"><div class="mut sm">Mis de côté aujourd'hui</div><p class="kv">${eur(D.P.lissage)} / mois</p><div class="mut xs">virement de lissage vers le compte joint</div></div>
+  </div>
+  <div class="card sec"><h2>Grosses dépenses prévues, mois par mois</h2>
+    <div class="cols" style="margin-top:10px"><div class="yax" style="height:${h}px">${T.map(v=>`<span style="bottom:${v/top*100}%">${tk(v)}</span>`).join('')}</div>
+    <div><div class="plot" style="height:${h}px">${T.slice(1).map(v=>`<div class="gl" style="bottom:${v/top*100}%"></div>`).join('')}
+      <div class="bars" style="grid-template-columns:repeat(13,1fr)">${months.map((x,i)=>`<div class="slot" tabindex="0" data-tip="h" data-tip-html="${esc(`<b>${MN[x.m]} ${x.y}</b>`+(x.items.length?x.items.map(e=>`<div class='r'><span>${esc(e.lib.slice(0,48))}</span><span>${e.mt?eur(e.mt):'action'}</span></div>`).join(''):'<span class=mut>Rien de prévu</span>'))}">${out[i]?`<i style="height:${out[i]/top*100}%;background:var(--s2);width:min(18px,44%)"></i>`:''}</div>`).join('')}</div></div>
+    <div class="xl" style="grid-template-columns:repeat(13,1fr)">${months.map(x=>`<span>${MS[x.m]}${x.m===0?' '+String(x.y).slice(2):''}</span>`).join('')}</div></div></div></div>
+  ${late.length?`<div class="card sec"><h2 class="neg">En retard</h2>${late.map(e=>`<div class="ev"><span class="d">${fdate(e.d)}</span><span>${esc(e.lib)}</span><span class="val">${e.mt?eur(e.mt):''}</span></div>`).join('')}</div>`:''}
+  <div class="card sec"><h2>Le détail</h2>${months.filter(x=>x.items.length).map(x=>`<div class="month"><h3><span>${MN[x.m][0].toUpperCase()+MN[x.m].slice(1)} ${x.y}</span><span class="mut">${x.items.some(e=>e.nat==='Dépense'&&e.mt)?eur(x.items.filter(e=>e.nat==='Dépense').reduce((a,e)=>a+e.mt,0)):''}</span></h3>
+    ${x.items.sort((a,b)=>a.d-b.d).map(e=>`<div class="ev"><span class="d">${e.d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</span><span>${esc(e.lib)}${e.nat==='Action'?'<span class="tag">action</span>':''}${e.nat==='Entrée'?'<span class="tag">rentrée</span>':''}${norm(e.cert)==='a verifier'?'<span class="tag">à vérifier</span>':''}</span><span class="val">${e.mt?(e.nat==='Entrée'?'+':'')+eur(e.mt):''}</span></div>`).join('')}</div>`).join('')||'<p class="empty">Aucune échéance.</p>'}</div>`;
+}
+function vCtl(){
+  const L=D.J.filter(x=>x.ctl),kinds={};L.forEach(x=>x.ctl.split('. ').map(s=>s.replace(/\.$/,'').trim()).filter(Boolean).forEach(k=>kinds[k]=(kinds[k]||0)+1));
+  const cpt=D.CPT.filter(c=>norm(c.tit)==='a preciser'),sold=D.CPT.filter(c=>c.typ!=='Technique'&&!c.s1set);
+  const nb=L.length+cpt.length;$('#nbc').textContent=nb;$('#nbc').hidden=!nb;
+  $('#v-c').innerHTML=`
+  <div class="grid g3">${Object.entries(kinds).map(([k,v])=>`<div class="card"><div class="mut sm">${esc(k)}</div><p class="kv">${v}</p></div>`).join('')||'<div class="card"><p class="empty">Aucune ligne à contrôler.</p></div>'}</div>
+  <div class="card sec"><h2>Lignes du Journal à contrôler</h2><p class="mut sm" style="margin:0">Dans le classeur : filtrez la colonne Contrôle du Journal.</p>
+   ${L.length?`<table><tr><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="n">Montant</th><th>Contrôle</th></tr>${L.slice(0,80).map(x=>`<tr><td>${x.d?x.d.toLocaleDateString('fr-FR'):''}</td><td>${esc(x.lib)}</td><td>${esc(x.c)}</td><td class="n">${eur(x.m)}</td><td>${esc(x.ctl)}</td></tr>`).join('')}</table>`:'<p class="empty">Rien à contrôler.</p>'}</div>
+  <div class="grid g2 sec">
+    <div class="card"><h2>Comptes au titulaire à préciser</h2>${cpt.length?`<ul class="al">${cpt.map(c=>`<li><span class="ic warn">!</span><span>${esc(c.c)}</span></li>`).join('')}</ul>`:'<p class="empty">Tous les titulaires sont renseignés.</p>'}</div>
+    <div class="card"><h2>Soldes à mettre à jour</h2>${sold.length?`<ul class="al">${sold.map(c=>`<li><span class="ic info">i</span><span>${esc(c.c)}</span></li>`).join('')}</ul>`:'<p class="empty">Tous les soldes sont renseignés.</p>'}</div>
+  </div>`;
+}
+function render(){MONTHS=monthly(SEL.y);vOverview();vBudget();vMaison();vEch();vCtl()}
+$('#nav').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;[...$('#nav').children].forEach(x=>x.classList.toggle('on',x===b));['o','b','m','e','c'].forEach(v=>$('#v-'+v).hidden=v!==b.dataset.v)};
+
+/* ---------- réglages ---------- */
+$('#cfg').onclick=()=>{$('#u1').value=cfg.u1;$('#u2').value=cfg.u2;$('#dlg').showModal()};
+$('#bsave').onclick=()=>{cfg={u1:$('#u1').value.trim(),u2:$('#u2').value.trim()};try{localStorage.setItem('budget-foyer',JSON.stringify(cfg))}catch(e){}load()};
+$('#bdemo').onclick=()=>{cfg={u1:'',u2:''};try{localStorage.removeItem('budget-foyer')}catch(e){}load()};
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#dlg').close();$('#src').textContent='Lecture du fichier…';try{await readFile(f)}catch(err){$('#src').textContent='Fichier illisible : '+err.message}};
+
+/* ---------- exemple fictif ---------- */
+function demo(){
+  const Y=today.getFullYear()-(today.getMonth()<2?1:0),lm=today.getMonth()<2?10:today.getMonth();
+  const cats=[['Salaire A','Revenus','Revenu','Fixe',2400],['Revenus B','Revenus','Revenu','Variable',3600],['Allocations','Revenus','Revenu','Fixe',150],
+    ['Crédits immobiliers','Logement','Courant','Fixe',1650],['Énergie','Logement','Courant','Fixe',210],['Eau','Logement','Courant','Fixe',45],['Internet et téléphone','Logement','Courant','Fixe',55],['Assurances','Logement','Courant','Annuel',0,{1:1500}],['Entretien et bricolage','Logement','Courant','Variable',150],
+    ['Crédit auto et LOA','Transport','Courant','Fixe',290],['Voiture et déplacements','Transport','Courant','Variable',220],['Garde et scolarité','Enfants','Courant','Variable',380],['Enfants : activités et vêtements','Enfants','Courant','Variable',160,{9:450}],
+    ['Alimentation','Vie courante','Courant','Variable',780],['Santé','Vie courante','Courant','Variable',80],['Restos','Vie courante','Courant','Variable',110],['Cadeaux','Vie courante','Courant','Variable',70,{12:500}],['Perso A','Vie courante','Courant','Variable',120],['Perso B','Vie courante','Courant','Variable',120],
+    ['Abonnements','Abonnements et banque','Courant','Fixe',60],['Frais bancaires','Abonnements et banque','Courant','Fixe',12],['Impôt sur le revenu','Impôts et taxes','Courant','Fixe',380],['Taxe foncière','Impôts et taxes','Courant','Annuel',0,{10:1300}],['Vacances et week-ends','Vacances','Courant','Variable',80,{2:600,7:1800,8:600}],
+    ['Travaux','Projet maison','Exceptionnel','Ponctuel',0],['Épargne disponible','Épargne','Épargne','Fixe',300],['Virement interne','Mouvements internes','Transfert','Ponctuel',0],["Remboursement d'avance",'Mouvements internes','Remboursement avance','Ponctuel',0]];
+  const X=[];cats.forEach(c=>X.push(['CAT',c[0],c[1],c[2],c[3],'',...MS.map((_,i)=>(c[5]&&c[5][i+1]!=null)?c[5][i+1]:c[4])]));
+  const J=[];let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  for(let m=1;m<=lm;m++)cats.forEach(c=>{if(c[2]==='Exceptionnel'||c[2]==='Transfert'||c[2]==='Remboursement avance')return;const b=(c[5]&&c[5][m]!=null)?c[5][m]:c[4];if(!b)return;
+    const v=c[3]==='Fixe'?b:Math.round(b*(.7+rnd()*.6));J.push({date:new Date(Y,m-1,5+Math.floor(rnd()*20)),libelle:c[0],montant:v,categorie:c[0],compte:'Compte joint','avance de':'',projet:''})});
+  [[3,'Acompte menuisier','Travaux',2400,'Livret B','B','Fenêtres'],[5,'Solde menuisier','Travaux',3100,'Compte joint','','Fenêtres'],[6,'Carrelage','Travaux',1800,'Livret A','A','Salle de bain'],[8,'Remboursement à B',"Remboursement d'avance",1000,'Compte joint','B','']]
+    .forEach(([m,l,c,v,cp,av,p])=>{if(m<=lm)J.push({date:new Date(Y,m-1,12),libelle:l,montant:v,categorie:c,compte:cp,'avance de':av,projet:p})});
+  J.push({date:new Date(Y,Math.min(lm,4)-1,9),libelle:'Supermarché',montant:84.2,categorie:'Alimentation',compte:'Compte joint','avance de':'',projet:'',controle:'Doublon possible.'});
+  J.push({date:new Date(Y,Math.min(lm,4)-1,9),libelle:'Supermarché',montant:84.2,categorie:'Alimentation',compte:'Compte joint','avance de':'',projet:'',controle:'Doublon possible.'});
+  [['Compte joint','Commun','Courant','Immédiate',2000,1800],['Livret A','A','Épargne disponible','Immédiate',9000,6900],['Livret B','B','Épargne disponible','Immédiate',7000,4600]].forEach(c=>X.push(['CPT',...c.slice(0,4),'',c[4],c[5]]));
+  X.push(['ENV','Phase 1','','','','',25000,14000,0,5500,8500,11000,1],['ENV','Phase 2','','','','',15000,6000,0,0,6000,9000,2]);
+  [['Fenêtres','Phase 1','Urgent','Terminé','Vente',5500,5500,5500,0,2400,5500],['Salle de bain','Phase 1','Important','En cours','Vente',8500,0,1800,6700,1800,8500],['Isolation combles','Phase 1','Important','Idée','Vente','',0,0,0,0,0],['Cuisine','Phase 2','Confort','Devis reçu','Vente',6000,0,0,6000,0,6000],['Terrasse','Phase 2','Envie','Idée','Vente','',0,0,0,0,0]]
+    .forEach(p=>X.push(['PRJ',...p.slice(0,5),...p.slice(5)]));
+  const e=(mo,d,l,mt,nat,cert)=>{const dd=new Date(today.getFullYear(),today.getMonth()+mo,d);X.push(['ECH',l,nat,'',cert,'À venir',dd,mt,'',0])};
+  e(0,24,'Noël',500,'Dépense','Probable');e(1,8,'Assurance habitation et auto',1500,'Dépense','Probable');e(1,15,'Revoir le contrat d\'énergie',0,'Action','Certaine');e(3,1,'Vacances d\'hiver',600,'Dépense','Probable');e(5,20,'Déclaration de revenus',0,'Action','Certaine');e(8,15,'Vacances d\'été',1800,'Dépense','Probable');e(10,15,'Taxe foncière',1300,'Dépense','À vérifier');
+  X.push(['AVA','A','','','','',1800,0,1800,0,1800],['AVA','B','','','','',2400,0,2400,1000,1400]);
+  X.push(['AVQ','B','Livret B','Apport frais de notaire','À décider','',new Date(Y,0,20),3000]);
+  X.push(['DET','Prêt immobilier','Maison','','','',1650,210000],['DET','Prêt relais','Ancien appartement','','','',0,180000]);
+  const V={prix:240000,agence:7000,autres:0,ira:0,capital:180000,debut:new Date(Y,1,1),taux:.035,franchise:'Oui',fin:new Date(Y+1,1,1),vente:new Date(Y+1,3,30),demenag:new Date(Y,2,15),reserve:8000,p_int:560,portage:820,mois:14,interets:7600,relais:187600,net:45400,reste_relais:3,ideal:new Date(Y+1,2,15),limite:new Date(Y+1,8,15),w_net:45400,w_av:3200,w_eng:0,w_res:8000,dispo:34200,env:40000,marge:-5800,prixmin:245800};
+  Object.entries(V).forEach(([k,v])=>X.push(['VEN',k,k==='franchise'?'':k,k==='franchise'?v:'','','',k==='franchise'?'':v]));
+  X.push(['PAR','total12','','','','',5700],['PAR','provision','','','','',1150],['PAR','lissage','','','','',300],['PAR','mois_couverts','','','','',2.1]);
+  return build(J,X,'Exemple fictif. Bouton « Données » pour ouvrir votre classeur.');
+}
+load();
+</script>
+</body>
+</html>

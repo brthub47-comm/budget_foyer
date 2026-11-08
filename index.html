@@ -35,6 +35,9 @@ button{cursor:pointer}button:hover{border-color:var(--faint)}
 nav{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 22px;border-bottom:1px solid var(--ln)}
 nav button{border:0;background:none;border-radius:0;padding:10px 12px;color:var(--mut);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
 nav button.on{color:var(--tx);border-bottom-color:var(--tx)}
+nav a.navlink{margin-left:auto;padding:10px 12px;color:var(--tx);font-weight:600;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:6px}
+nav a.navlink:hover{border-bottom-color:var(--faint)}
+a{color:var(--s1)}
 nav .badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--crit);color:#fff;font-size:.72rem;line-height:18px;text-align:center}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:18px 20px}
 .grid{display:grid;gap:16px}
@@ -127,6 +130,7 @@ dialog input[type=text]{width:100%}
   <button data-v="m">Maison et vente</button>
   <button data-v="e">À anticiper</button>
   <button data-v="c">Contrôles<span class="badge" id="nbc" hidden></span></button>
+  <a href="guide.html" class="navlink">Guide de saisie →</a>
 </nav>
 
 <section id="v-o"></section>
@@ -243,6 +247,7 @@ const inR=(x,r)=>x.per>=r[0]&&x.per<=r[1];
 const sumT=(t,r)=>D.J.filter(x=>x.t===t&&inR(x,r)).reduce((a,x)=>a+x.m,0);
 function init(){
   $('#src').textContent=D.label;
+  if(mode!=='demo'){try{localStorage.setItem('budget-foyer-ref',JSON.stringify({accounts:D.CPT.filter(c=>c.typ!=='Technique').map(c=>c.c),people:D.AVA.map(a=>a.w),projects:D.PRJ.filter(p=>norm(p.env)!=='deja realise').map(p=>p.p),cats:D.CAT.map(c=>({c:c.c,f:c.f,t:c.t}))}))}catch(e){}}
   const ys=years();SEL.y=ys[ys.length-1]||today.getFullYear();
   $('#py').innerHTML=ys.map(y=>`<option ${y===SEL.y?'selected':''}>${y}</option>`).join('');
   fillMonths();render();
@@ -441,7 +446,7 @@ function vCtl(){
   const nb=L.length+cpt.length;$('#nbc').textContent=nb;$('#nbc').hidden=!nb;
   $('#v-c').innerHTML=`
   <div class="grid g3">${Object.entries(kinds).map(([k,v])=>`<div class="card"><div class="mut sm">${esc(k)}</div><p class="kv">${v}</p></div>`).join('')||'<div class="card"><p class="empty">Aucune ligne à contrôler.</p></div>'}</div>
-  <div class="card sec"><h2>Lignes du Journal à contrôler</h2><p class="mut sm" style="margin:0">Dans le classeur : filtrez la colonne Contrôle du Journal.</p>
+  <div class="card sec"><h2>Lignes du Journal à contrôler</h2><p class="mut sm" style="margin:0">Dans le classeur : filtrez la colonne Contrôle du Journal. <a href="guide.html#voyant">Que veut dire chaque message ?</a></p>
    ${L.length?`<table><tr><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="n">Montant</th><th>Contrôle</th></tr>${L.slice(0,80).map(x=>`<tr><td>${x.d?x.d.toLocaleDateString('fr-FR'):''}</td><td>${esc(x.lib)}</td><td>${esc(x.c)}</td><td class="n">${eur(x.m)}</td><td>${esc(x.ctl)}</td></tr>`).join('')}</table>`:'<p class="empty">Rien à contrôler.</p>'}</div>
   <div class="grid g2 sec">
     <div class="card"><h2>Comptes au titulaire à préciser</h2>${cpt.length?`<ul class="al">${cpt.map(c=>`<li><span class="ic warn">!</span><span>${esc(c.c)}</span></li>`).join('')}</ul>`:'<p class="empty">Tous les titulaires sont renseignés.</p>'}</div>
@@ -449,7 +454,7 @@ function vCtl(){
   </div>`;
 }
 function render(){MONTHS=monthly(SEL.y);vOverview();vBudget();vMaison();vEch();vCtl()}
-$('#nav').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;[...$('#nav').children].forEach(x=>x.classList.toggle('on',x===b));['o','b','m','e','c'].forEach(v=>$('#v-'+v).hidden=v!==b.dataset.v)};
+$('#nav').onclick=e=>{const b=e.target.closest('button[data-v]');if(!b)return;[...$('#nav').querySelectorAll('button')].forEach(x=>x.classList.toggle('on',x===b));['o','b','m','e','c'].forEach(v=>$('#v-'+v).hidden=v!==b.dataset.v)};
 
 /* ---------- réglages ---------- */
 $('#cfg').onclick=()=>{$('#u1').value=cfg.u1;$('#u2').value=cfg.u2;$('#dlg').showModal()};

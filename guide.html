@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>La bonne ligne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout : un carnet de poche — en-tête avec une ligne du Journal qui se remplit, puis des sections empilées, chacune un « jeu » (trier, décider, retrouver le mois, cocher, répondre). */
+:root{
+  --bg:#eef3f0; --surface:#ffffff; --ink:#132019; --mute:#56665d; --line:#d6e1da; --soft:#e3ebe6;
+  --accent:#188038; --accent-ink:#ffffff; --hl:#fff1a8; --hl-ink:#3d3200; --neg:#c62f2f; --ok:#188038; --warn:#b26b00;
+  --f-rev:#188038; --f-log:#2a78d6; --f-tra:#eb6834; --f-enf:#1baf7a; --f-vie:#eda100; --f-abo:#e87ba4; --f-imp:#4b7a00; --f-vac:#6250d6; --f-prj:#a3471e; --f-ep:#0e7490; --f-int:#8a949e;
+  --display:"Bricolage Grotesque", "Manrope", system-ui, sans-serif;
+  --body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101713; --surface:#18211c; --ink:#e7efe9; --mute:#9db0a5; --line:#2a3630; --soft:#202b25;
+  --accent:#4cc27f; --accent-ink:#0b1a11; --hl:#4d4310; --hl-ink:#fff3b8; --neg:#ef7d72; --ok:#4cc27f; --warn:#e6ab45;
+  --f-rev:#4cc27f; --f-log:#3987e5; --f-tra:#d95926; --f-enf:#199e70; --f-vie:#c98500; --f-abo:#d55181; --f-imp:#7ea33a; --f-vac:#9085e9; --f-prj:#d0703f; --f-ep:#2aa5c2; --f-int:#6b7681;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101713; --surface:#18211c; --ink:#e7efe9; --mute:#9db0a5; --line:#2a3630; --soft:#202b25;
+  --accent:#4cc27f; --accent-ink:#0b1a11; --hl:#4d4310; --hl-ink:#fff3b8; --neg:#ef7d72; --ok:#4cc27f; --warn:#e6ab45;
+  --f-rev:#4cc27f; --f-log:#3987e5; --f-tra:#d95926; --f-enf:#199e70; --f-vie:#c98500; --f-abo:#d55181; --f-imp:#7ea33a; --f-vac:#9085e9; --f-prj:#d0703f; --f-ep:#2aa5c2; --f-int:#6b7681;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-weight:800;font-size:clamp(2.6rem,7vw,4.4rem);line-height:.98}
+h2{font-weight:800;font-size:clamp(1.6rem,3.6vw,2.3rem);line-height:1.05}
+h3{font-weight:600;font-size:1.15rem}
+p{margin:0}
+.lead{color:var(--mute);font-size:1.06rem;max-width:58ch}
+.eyebrow{font:600 .74rem/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+a{color:var(--accent)}
+
+/* barre de navigation */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:8px}
+nav.top a{flex:none;text-decoration:none;color:var(--mute);font-weight:600;font-size:.88rem;padding:7px 12px;border-radius:999px}
+nav.top a:hover{color:var(--ink);background:var(--soft)}
+nav.top a.home{color:var(--ink);background:var(--surface);border:1px solid var(--line)}
+.refnote{font-size:.85rem;color:var(--mute);display:flex;gap:8px;align-items:center}
+.refnote i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--mute));flex:none}
+
+/* en-tête */
+header.hero{padding-block:42px 30px}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:26px}
+.hero h1 span{color:var(--accent)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:6px}
+.rule{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.93rem}
+.rule b{font-family:var(--display);font-size:1.3rem;line-height:1;color:var(--accent);min-width:1.1em}
+
+/* la ligne du Journal (maquette de tableur) */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 0 var(--line)}
+.sheet-bar{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:.8rem;color:var(--mute)}
+.sheet-bar i{width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block}
+.scroll{overflow-x:auto}
+table.row{border-collapse:collapse;min-width:760px;width:100%;font-family:var(--mono);font-size:.84rem}
+table.row th{font:600 .7rem/1 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);text-align:left;padding:8px 10px;background:var(--soft);border-right:1px solid var(--line)}
+table.row th.n{width:34px;text-align:center}
+table.row td{padding:10px;border-top:1px solid var(--line);border-right:1px solid var(--line);white-space:nowrap;vertical-align:middle;transition:background .3s}
+table.row td.n{background:var(--soft);color:var(--mute);text-align:center;font-size:.72rem}
+table.row td.key{background:var(--hl);color:var(--hl-ink);font-weight:500;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--warn) 55%,transparent)}
+table.row td.empty{color:color-mix(in srgb,var(--mute) 55%,transparent)}
+.neg{color:var(--neg)}
+td.key .neg{color:inherit}
+.cat{display:inline-flex;align-items:center;gap:7px}
+.cat::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c,var(--f-int));flex:none}
+.typing{display:inline-block;border-right:2px solid transparent}
+@media (prefers-reduced-motion:no-preference){.typing.on{animation:caret .8s steps(1) infinite}}
+@keyframes caret{50%{border-color:var(--accent)}}
+
+section.block{padding-block:46px;border-top:1px solid var(--line)}
+section.block,header.hero{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 56px)}
+.sec-head{display:grid;gap:8px;margin-bottom:22px;max-width:70ch}
+
+/* « Ça m'arrive » */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:600;font-size:.88rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{flex:1 1 200px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px}
+.play{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:860px){.play{grid-template-columns:1fr}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:grid;grid-template-rows:auto 1fr;gap:10px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;min-height:104px;transition:transform .15s,border-color .15s}
+.tile:hover{transform:translateY(-2px);border-color:var(--mute)}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.tile .ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,var(--surface));color:var(--c)}
+.tile .ico svg{width:21px;height:21px}
+.tile span{font-weight:600;font-size:.92rem;line-height:1.25}
+.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);display:grid;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+@media(max-width:860px){.detail{position:static}}
+.detail h3{font-size:1.45rem;font-weight:800}
+.ticket{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-family:var(--mono);font-size:.9rem;background:var(--soft);border-radius:10px;padding:10px 12px;border:1px dashed var(--line)}
+.ticket b{font-weight:500}
+.mini{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:.92rem;align-items:baseline}
+.mini dt{font:600 .7rem/1.6 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.mini dd{margin:0;font-family:var(--mono);font-size:.86rem}
+.mini dd.key{background:var(--hl);color:var(--hl-ink);border-radius:6px;padding:1px 7px;justify-self:start}
+.tips{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.tips li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:.93rem}
+.tips li::before{content:"!";width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--hl);color:var(--hl-ink);font-weight:800;font-size:.75rem;margin-top:2px}
+.prep{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.prep .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.prep label{display:grid;gap:3px;font-size:.76rem;font-weight:600;color:var(--mute)}
+.prep input,.prep select{width:100%;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 9px;font-size:.9rem;color:var(--ink)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:10px;padding:10px 16px;cursor:pointer}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.copied{font-size:.85rem;color:var(--ok);font-weight:600}
+textarea.fallback{width:100%;font-family:var(--mono);font-size:.8rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:8px}
+
+/* Avance ou contribution */
+.decide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:860px){.decide{grid-template-columns:1fr}}
+.q-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:16px;min-height:240px}
+.steps{display:flex;gap:6px}
+.steps i{height:6px;flex:1;border-radius:3px;background:var(--soft)}
+.steps i.on{background:var(--accent)}
+.q-card .q{font-family:var(--display);font-weight:800;font-size:1.5rem;line-height:1.15}
+.yn{display:flex;gap:10px;flex-wrap:wrap}
+.yn .btn{min-width:110px;font-size:1rem}
+.verdict{border-radius:12px;padding:14px 16px;background:color-mix(in srgb,var(--c) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 40%,var(--line))}
+.verdict b{display:block;font-family:var(--display);font-size:1.3rem;margin-bottom:4px}
+.path{display:grid;gap:8px;font-size:.92rem}
+.path div{display:flex;gap:10px;align-items:center;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.path em{font-style:normal;font-weight:700;color:var(--accent);margin-left:auto}
+
+/* L'année */
+.months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+@media(max-width:860px){.months{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:440px){.months{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.month{position:relative;display:grid;gap:8px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 8px 12px;cursor:pointer;text-align:left;min-height:118px}
+.month b{font-family:var(--display);font-weight:800;font-size:1.05rem}
+.month .dots{display:flex;flex-wrap:wrap;gap:4px}
+.month .dots i{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,var(--surface));color:var(--c)}
+.month .dots svg{width:14px;height:14px}
+.month[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.month .now{position:absolute;top:-9px;right:6px;font:700 .62rem/1 var(--body);letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:4px 6px;border-radius:999px}
+.mdetail{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;gap:12px}
+.ev{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start}
+.ev .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 16%,var(--surface));color:var(--c)}
+.ev .ico svg{width:19px;height:19px}
+.ev p{font-size:.92rem;color:var(--mute)}
+.ev h4{margin:0 0 2px;font-size:1rem}
+
+/* Rituels */
+.rituals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:960px){.rituals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.rituals{grid-template-columns:1fr}}
+.ritual{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;align-content:start}
+.ritual .time{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;color:var(--accent)}
+.ritual .time small{font-size:.9rem;color:var(--mute);font-family:var(--body);font-weight:600}
+.check{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.9rem;align-items:start;cursor:pointer}
+.check input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
+.check input:checked+span{text-decoration:line-through;color:var(--mute)}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.reset{justify-self:start;border:0;background:none;color:var(--mute);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0}
+
+/* Quiz */
+.quiz{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:22px;align-items:start}
+@media(max-width:860px){.quiz{grid-template-columns:1fr}}
+.qz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:14px}
+.qz .num{font:600 .78rem/1 var(--body);color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.qz .q{font-family:var(--display);font-weight:800;font-size:1.35rem;line-height:1.2}
+.answers{display:grid;gap:8px}
+.answer{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:500}
+.answer:hover:not(:disabled){border-color:var(--mute)}
+.answer.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.answer.bad{border-color:var(--neg);background:color-mix(in srgb,var(--neg) 12%,var(--surface))}
+.answer:disabled{cursor:default}
+.explain{font-size:.93rem;color:var(--mute)}
+.score{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:22px;display:grid;gap:10px}
+.score .big{font-family:var(--display);font-weight:800;font-size:3.4rem;line-height:1}
+.score .big small{font-size:1.2rem;opacity:.7}
+.score p{opacity:.85}
+.pips{display:flex;gap:5px;flex-wrap:wrap}
+.pips i{width:16px;height:16px;border-radius:5px;background:color-mix(in srgb,var(--bg) 22%,transparent)}
+.pips i.g{background:var(--ok)}.pips i.b{background:var(--neg)}
+
+/* Voyant rouge */
+.alerts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.alert{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:6px}
+.pill{justify-self:start;font:600 .78rem/1 var(--mono);background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg);padding:6px 9px;border-radius:7px}
+.alert p{font-size:.9rem}
+.alert p.fix{color:var(--ink);font-weight:600}
+.alert p.why{color:var(--mute)}
+footer{padding-block:34px 50px;color:var(--mute);font-size:.86rem;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<nav class="top" aria-label="Sections"><div class="wrap">
+  <a href="index.html" class="home">← Tableau de bord</a><a href="#principe">Le principe</a><a href="#situations">Ça m'arrive</a><a href="#avance">Avance ou pas ?</a><a href="#annee">L'année</a><a href="#rituels">Rituels</a><a href="#quiz">Quiz</a><a href="#voyant">Voyant rouge</a>
+</div></nav>
+
+<header class="hero" id="principe"><div class="wrap hero-grid">
+  <div style="display:grid;gap:14px">
+    <p class="eyebrow">Budget du foyer · guide de poche</p>
+    <h1>Une situation,<br><span>une ligne.</span></h1>
+    <p class="lead">Tout ce qui entre ou sort de vos comptes devient une ligne de l'onglet Journal. Choisissez ce qui vous arrive, le guide vous montre la ligne à écrire et vous la prépare à coller.</p>
+    <p class="refnote" id="refnote"><i></i><span></span></p>
+  </div>
+  <div class="sheet" aria-label="Exemple de ligne du Journal">
+    <div class="sheet-bar"><i></i>Journal · <span id="heroLabel">les courses</span></div>
+    <div class="scroll"><table class="row" id="heroRow"></table></div>
+  </div>
+  <div class="rules">
+    <div class="rule"><b>1</b><span>Un mouvement d'argent = une ligne, dans n'importe quel ordre.</span></div>
+    <div class="rule"><b>2</b><span>Toujours une catégorie et le compte qui a payé.</span></div>
+    <div class="rule"><b>3</b><span>Un remboursement s'écrit en négatif, dans sa catégorie d'origine.</span></div>
+    <div class="rule"><b>4</b><span>« Avance de » seulement si le foyer doit rembourser quelqu'un.</span></div>
+  </div>
+</div></header>
+
+<section class="block" id="situations"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">Ça m'arrive</p><h2>Qu'est-ce qui vous arrive ?</h2><p class="lead">Touchez une situation : la ligne s'affiche, les cases qui comptent sont surlignées.</p></div>
+  <div class="filters" role="group" aria-label="Filtrer les situations">
+    <button class="chip" data-g="all" aria-pressed="true">Tout</button>
+    <button class="chip" data-g="q" aria-pressed="false">Le quotidien</button>
+    <button class="chip" data-g="m" aria-pressed="false">Maison et travaux</button>
+    <button class="chip" data-g="a" aria-pressed="false">Moments de l'année</button>
+    <input class="search" id="q" type="search" placeholder="Chercher : essence, CPAM, Noël…" aria-label="Chercher une situation">
+  </div>
+  <div class="play">
+    <div class="tiles" id="tiles"></div>
+    <aside class="detail" id="detail" aria-live="polite"></aside>
+  </div>
+</div></section>
+
+<section class="block" id="avance"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">Avance ou pas ?</p><h2>Le foyer doit-il vous rembourser ?</h2><p class="lead">Trois questions, et vous savez quoi mettre dans la colonne « Avance de ».</p></div>
+  <div class="decide">
+    <div class="q-card" id="qcard"></div>
+    <div class="path" id="qpath"></div>
+  </div>
+</div></section>
+
+<section class="block" id="annee"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">L'année</p><h2>Ce qui tombe chaque mois</h2><p class="lead">Les grosses dépenses irrégulières se préparent dans l'onglet Échéancier. Touchez un mois.</p></div>
+  <div class="months" id="months"></div>
+  <div class="mdetail" id="mdetail"></div>
+</div></section>
+
+<section class="block" id="rituels"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">Rituels</p><h2>Dix minutes par semaine, vingt par mois</h2><p class="lead">Cochez au fur et à mesure. Les cases restent cochées dans ce navigateur jusqu'à ce que vous les remettiez à zéro.</p></div>
+  <div class="rituals" id="rituals"></div>
+</div></section>
+
+<section class="block" id="quiz"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">Quiz</p><h2>Êtes-vous incollables ?</h2><p class="lead">Neuf situations piégeuses tirées de la vraie vie. À faire à deux.</p></div>
+  <div class="quiz">
+    <div class="qz" id="qz"></div>
+    <div class="score" id="score"></div>
+  </div>
+</div></section>
+
+<section class="block" id="voyant"><div class="wrap">
+  <div class="sec-head"><p class="eyebrow">Voyant rouge</p><h2>La colonne Contrôle vous parle</h2><p class="lead">Quand une case de la colonne Contrôle se colore en rouge, voici ce qu'elle veut dire et comment l'éteindre.</p></div>
+  <div class="alerts" id="alerts"></div>
+</div></section>
+
+<footer><div class="wrap">Guide du classeur « Budget du foyer » (Journal, Budget, Avances, Projets, Vente, Échéancier, Patrimoine). Les montants sont des exemples. Vos comptes et projets, quand ils s'affichent, sont lus dans ce navigateur : rien n'est envoyé ailleurs. <a href="index.html">Retour au tableau de bord</a>.</div></footer>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- icônes ---------- */
+const P={
+ bag:'<path d="M6 8h12l-1 12H7z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+ note:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+ health:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
+ back:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+ drop:'<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
+ car:'<path d="M5 16l1.6-5h10.8L19 16"/><path d="M4 16h16v3H4z"/><path d="M7 19v1M17 19v1"/>',
+ school:'<path d="M7 9a5 5 0 0 1 10 0v11H7z"/><path d="M10 4h4M7 14h10"/>',
+ fork:'<path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10"/><path d="M16 3c-2 2-2 6 0 8v10"/>',
+ person:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+ swap:'<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>',
+ safe:'<rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M12 9v1"/>',
+ wallet:'<path d="M4 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4z"/><path d="M4 7l10-3v3"/><path d="M16 13h2"/>',
+ ask:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17h.01"/>',
+ hammer:'<path d="M3 21l9-9"/><path d="M12 12l3 3 6-6-3-3-3 3"/><path d="M12 6l3-3"/>',
+ receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+ out:'<path d="M12 3v10"/><path d="m8 9 4 4 4-4"/><path d="M5 21h14"/>',
+ wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>',
+ sofa:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M3 11h18v6H3z"/><path d="M5 17v2M19 17v2"/>',
+ sold:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 15l2 2 4-4"/>',
+ gift:'<path d="M4 10h16v10H4z"/><path d="M3 7h18v3H3z"/><path d="M12 7v13"/><path d="M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M5 19l1.4-1.4M17.6 6.4 19 5"/>',
+ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+ house:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+ cake:'<path d="M4 20h16v-7H4z"/><path d="M4 16c2 1 4-1 6 0s4 1 6 0 2-1 4 0"/><path d="M12 13V9M12 6v.01"/>',
+ bolt:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
+ snow:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/>',
+ doc:'<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',
+ fire:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2-1-4 0-6z"/>',
+ pool:'<path d="M3 17c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0"/><path d="M8 14V5a2 2 0 0 1 4 0M14 14V5a2 2 0 0 1 4 0M8 9h6"/>',
+ star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'
+};
+const ico=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||P.star}</svg>`;
+
+/* ---------- vos listes : lues dans ce navigateur (déposées par le tableau de bord), sinon exemples ---------- */
+const REF=(()=>{try{return JSON.parse(localStorage.getItem('budget-foyer-ref')||'null')}catch(e){return null}})();
+const pick=(arr,fb)=>Array.isArray(arr)&&arr.length?arr:fb;
+const ACCOUNTS=pick(REF&&REF.accounts,['Compte joint','Compte perso 1','Compte perso 2','Livret A','Livret 2']);
+const JOINT=ACCOUNTS.find(a=>/joint|commun/i.test(a))||ACCOUNTS[0];
+const PERSO_ACC=ACCOUNTS.find(a=>a!==JOINT&&!/livret|ldd|cashbee|sumeria|pargne|assurance|per\b/i.test(a))||ACCOUNTS[1]||JOINT;
+const LIVRET=ACCOUNTS.find(a=>/livret|ldd/i.test(a))||'Livret A';
+const PEOPLE=pick(REF&&REF.people,['Personne 1','Personne 2','Enfants']);
+const P1=PEOPLE[0],P2=PEOPLE.find((p,i)=>i>0&&!/enfant/i.test(p))||P1;
+const PROJECTS=pick(REF&&REF.projects,['Rénovation salle de bain','Rénovation cuisine','Piscine','Bibliothèque salon',"Vente de l'ancien logement"]);
+const pj=re=>PROJECTS.find(p=>re.test(p))||PROJECTS.find(p=>!/^vente/i.test(p))||PROJECTS[0];
+const SALE=PROJECTS.find(p=>/^vente/i.test(p))||"Vente de l'ancien logement";
+const CATS=REF&&Array.isArray(REF.cats)?REF.cats:[];
+const catsOf=(test,fb)=>{const l=CATS.filter(test).map(x=>x.c);return l.length?l:fb};
+const REVENUS=catsOf(x=>x.t==='Revenu'&&!/imp[oô]t|autre|aide|alloc/i.test(x.c),['Salaire 1','Revenus 2']);
+const PERSO=catsOf(x=>/^perso/i.test(x.c),['Perso 1','Perso 2']);
+const FAM={rev:'var(--f-rev)',log:'var(--f-log)',tra:'var(--f-tra)',enf:'var(--f-enf)',vie:'var(--f-vie)',abo:'var(--f-abo)',imp:'var(--f-imp)',vac:'var(--f-vac)',prj:'var(--f-prj)',ep:'var(--f-ep)',int:'var(--f-int)'};
+const FAMBYNAME={'Revenus':'rev','Logement':'log','Transport':'tra','Enfants':'enf','Vie courante':'vie','Abonnements et banque':'abo','Impôts et taxes':'imp','Vacances':'vac','Projet maison':'prj','Épargne':'ep','Mouvements internes':'int','À catégoriser':'int'};
+const CF={'Allocations CAF':'rev','Aide famille':'rev','Impôts : remboursements et crédits':'rev','Autres revenus':'rev',
+ 'Crédits immobiliers':'log','Énergie':'log','Eau':'log','Internet et téléphone':'log','Assurances':'log','Emploi à domicile':'log','Entretien et bricolage':'log','Maison : déco et petit équipement':'log',
+ 'Crédit auto et LOA':'tra','Voiture et déplacements':'tra','Garde et scolarité':'enf','Enfants : activités et vêtements':'enf',
+ 'Alimentation':'vie','Santé':'vie','Restos':'vie','Sorties et loisirs':'vie','Cadeaux':'vie',
+ 'Abonnements':'abo','Frais bancaires':'abo','Dons':'abo','Impôt sur le revenu':'imp','Taxe foncière':'imp','Vacances et week-ends':'vac',
+ 'Travaux':'prj','Mobilier et installation':'prj','Déménagement':'prj',"Frais d'achat et de crédit":'prj','Frais de vente':'prj',
+ 'Épargne disponible':'ep','Épargne long terme':'ep','Épargne enfants':'ep','Virement interne':'int',"Remboursement d'avance":'int','À catégoriser':'int'};
+CATS.forEach(x=>{if(FAMBYNAME[x.f])CF[x.c]=FAMBYNAME[x.f]});
+REVENUS.forEach(c=>{CF[c]=CF[c]||'rev'});PERSO.forEach(c=>{CF[c]=CF[c]||'vie'});
+
+/* ---------- les situations ---------- */
+/* k = cases surlignées : m montant, c catégorie, a compte, v avance, p projet, j justificatif */
+const S=[
+ {g:'q',ic:'bag',t:'Je fais les courses',lib:'Supermarché',m:'86,40',cat:['Alimentation'],cpt:JOINT,k:{c:'La bonne catégorie'},tips:['Couches, produits ménagers et hygiène vont aussi en Alimentation.','En vacances, les courses vont en Vacances et week-ends.']},
+ {g:'q',ic:'note',t:'Mon salaire tombe',lib:'Salaire du mois',m:'2 500,00',cat:REVENUS,cpt:PERSO_ACC,k:{c:'Un revenu par personne',a:'Le compte où il arrive'},tips:['Toujours en positif, à la date où l\'argent arrive.','Revenus irréguliers : une ligne par versement.']},
+ {g:'q',ic:'health',t:'La CPAM me rembourse',lib:'Remboursement CPAM',m:'-19,00',cat:['Santé'],cpt:JOINT,k:{m:'En négatif : c\'est un remboursement',c:'Même catégorie que la consultation'},tips:['Idem pour la mutuelle : Santé, en négatif.','Ne jamais le mettre en revenu : la santé paraîtrait plus chère qu\'elle n\'est.']},
+ {g:'q',ic:'back',t:'Un achat m\'est remboursé',lib:'Retour d\'un colis',m:'-12,00',cat:['Enfants : activités et vêtements','Maison : déco et petit équipement'].concat(PERSO),cpt:JOINT,k:{m:'En négatif',c:'La catégorie de l\'achat d\'origine'},tips:['Un retour de matériaux pour un projet : Travaux, en négatif, avec le projet.']},
+ {g:'q',ic:'drop',t:'On me rembourse une part de l\'eau',lib:'Remboursement eau (compteur partagé)',m:'-64,00',cat:['Eau'],cpt:JOINT,k:{m:'En négatif',c:'Eau : vous voyez votre vraie part'},tips:['Compteur partagé : la facture entière va en Eau, les remboursements en négatif.']},
+ {g:'q',ic:'car',t:'Plein, péage, parking',lib:'Essence',m:'87,90',cat:['Voiture et déplacements'],cpt:PERSO_ACC,tips:['Le train ou le parking d\'un départ en vacances va en Vacances et week-ends.']},
+ {g:'q',ic:'school',t:'Cantine, crèche, garderie',lib:'Cantine',m:'182,00',cat:['Garde et scolarité'],cpt:JOINT,tips:['Vêtements, sport, fournitures : Enfants : activités et vêtements.']},
+ {g:'q',ic:'fork',t:'Un resto, un ciné',lib:'Restaurant',m:'46,40',cat:['Restos','Sorties et loisirs'],cpt:JOINT,tips:['Payé avec votre carte perso sans rien attendre en retour : votre compte, Avance de vide.']},
+ {g:'q',ic:'person',t:'Un achat pour moi',lib:'Coiffeur',m:'45,00',cat:PERSO,cpt:PERSO_ACC,k:{c:'Perso : votre budget à vous'},tips:['Abonnements personnels (sport, danse) aussi.']},
+ {g:'q',ic:'swap',t:'Je vire de l\'argent sur le compte joint',lib:'Virement lissage',m:'300,00',cat:['Virement interne'],cpt:PERSO_ACC,k:{c:'Ni dépense, ni épargne',a:'Le compte de départ'},tips:['Une seule ligne, côté compte de départ.','C\'est ce virement qui finance les grosses échéances : son montant se règle dans l\'Échéancier.']},
+ {g:'q',ic:'safe',t:'Je mets de côté',lib:'Versement assurance vie',m:'100,00',cat:['Épargne long terme','Épargne disponible','Épargne enfants'],cpt:PERSO_ACC,k:{c:'Livret, assurance vie ou PER'},tips:['Livrets : Épargne disponible. Assurance vie et PER : long terme. Comptes des enfants : Épargne enfants.']},
+ {g:'q',ic:'wallet',t:'Je retire des espèces',lib:'Retrait espèces',m:'50,00',cat:['Alimentation','Sorties et loisirs','Maison : déco et petit équipement'],cpt:JOINT,k:{c:'La catégorie de l\'usage prévu'},tips:['Plus simple que de suivre chaque billet.']},
+ {g:'q',ic:'ask',t:'Je ne sais pas où le mettre',lib:'Chèque',m:'25,00',cat:['À catégoriser'],cpt:JOINT,k:{c:'À reprendre en fin de mois'},tips:['La colonne Contrôle vous le rappellera.']},
+ {g:'m',ic:'hammer',t:'Matériaux pour un projet',lib:'Magasin de bricolage',m:'379,95',cat:['Travaux'],cpt:JOINT,prj:pj(/wc|salle|cuisine/i),k:{c:'Travaux',p:'Le projet, toujours'},tips:['Sans projet, la dépense n\'apparaît pas dans l\'onglet Projets.']},
+ {g:'m',ic:'receipt',t:'Acompte d\'un artisan',lib:'Acompte artisan',m:'3 000,00',cat:['Travaux'],cpt:JOINT,prj:pj(/piscine|auvent|cuisine/i),j:'Oui',k:{p:'Le projet',j:'Facture gardée'},tips:['Le jour de la signature, reportez aussi le devis dans Projets, colonne « Devis signés ».']},
+ {g:'m',ic:'out',t:'Je paie avec mon livret pour la maison',lib:'Parquet',m:'3 400,00',cat:['Travaux','Mobilier et installation'],cpt:LIVRET,av:P2,prj:pj(/sol|salle|parquet/i),j:'Oui',k:{a:'Le livret qui paie',v:'Vous : le foyer vous doit cette somme',p:'Le projet'},tips:['Dites-le avant de payer : « c\'est une avance ».','Le reste dû de chacun s\'affiche dans l\'onglet Avances.']},
+ {g:'m',ic:'wrench',t:'Petit bricolage, jardin',lib:'Vis et chevilles',m:'17,89',cat:['Entretien et bricolage'],cpt:JOINT,k:{c:'Pas de projet : c\'est le quotidien'},tips:['Si l\'achat fait partie d\'un projet : Travaux et le projet.']},
+ {g:'m',ic:'sofa',t:'Un gros meuble pour la maison',lib:'Bibliothèque',m:'900,00',cat:['Mobilier et installation'],cpt:JOINT,prj:pj(/biblioth|cuisine|meuble/i),k:{c:'Mobilier, pas déco',p:'Le projet'},tips:['Petit objet de déco : Maison : déco et petit équipement, sans projet.']},
+ {g:'m',ic:'doc',t:'Frais de l\'ancienne maison',lib:'Diagnostics immobiliers',m:'180,00',cat:['Frais de vente'],cpt:JOINT,prj:SALE,k:{c:'Frais de vente',p:'Le projet de vente'},tips:['Annonces, diagnostics, agence. Ils sont déduits du produit net dans l\'onglet Vente.']},
+ {g:'m',ic:'back',t:'On me rembourse mon avance',lib:'Remboursement avance parquet',m:'3 400,00',cat:["Remboursement d'avance"],cpt:JOINT,av:P2,k:{c:'Sa propre catégorie',a:'Le compte qui paie',v:'La personne remboursée'},tips:['Le reste dû baisse aussitôt dans l\'onglet Avances.']},
+ {g:'m',ic:'sold',t:'La maison est vendue !',lib:'Produit net de la vente',m:'80 000,00',cat:['Virement interne'],cpt:JOINT,prj:SALE,k:{c:'Pas un revenu : la maison devient de l\'argent',p:'Le projet de vente'},tips:['Puis : vrais chiffres dans l\'onglet Vente, bien et prêt relais retirés du Patrimoine.','D\'abord rembourser les avances, ensuite lancer les travaux.','Résilier énergie, eau, internet et assurance de la maison.']},
+ {g:'a',ic:'gift',t:'Noël',lib:'Cadeaux enfants',m:'240,00',cat:['Cadeaux'],cpt:JOINT,k:{c:'Cadeaux'},tips:['Le repas de fête va en Alimentation.','Le budget de décembre se règle dans l\'onglet Budget.']},
+ {g:'a',ic:'sun',t:'Les vacances',lib:'Location été (solde)',m:'1 800,00',cat:['Vacances et week-ends'],cpt:JOINT,k:{c:'Tout ce qui se passe sur place'},tips:['Courses, restos, laverie, activités sur place : tout en Vacances, pour voir le vrai coût du séjour.','L\'acompte de location se paie souvent en janvier.']},
+ {g:'a',ic:'school',t:'La rentrée',lib:'Inscription au club de sport',m:'220,00',cat:['Enfants : activités et vêtements','Garde et scolarité'],cpt:JOINT,tips:['Inscriptions, fournitures, abonnement de bus : Enfants. Cantine et garderie : Garde et scolarité.']},
+ {g:'a',ic:'shield',t:'L\'assurance annuelle',lib:'Assurance habitation et autos',m:'1 800,00',cat:['Assurances'],cpt:JOINT,k:{m:'Provisionné à l\'avance'},tips:['Souvent prélevée en janvier : à préparer dans l\'Échéancier dès l\'automne.']},
+ {g:'a',ic:'house',t:'La taxe foncière',lib:'Taxe foncière',m:'1 500,00',cat:['Taxe foncière'],cpt:JOINT,tips:['Une taxe par bien possédé au 1er janvier.','Reportez le montant de l\'avis dans l\'Échéancier dès réception.']},
+ {g:'a',ic:'doc',t:'Les impôts me remboursent',lib:'Remboursement impôt',m:'1 200,00',cat:['Impôts : remboursements et crédits'],cpt:JOINT,k:{c:'Un revenu exceptionnel'},tips:['Pareil pour l\'avance de crédit d\'impôt de mi-janvier.','Si vous devez payer un solde : Impôt sur le revenu.']},
+ {g:'a',ic:'cake',t:'Un anniversaire',lib:'Fête d\'anniversaire',m:'80,00',cat:['Enfants : activités et vêtements','Cadeaux'],cpt:JOINT,tips:['La fête des enfants : Enfants. Un cadeau offert : Cadeaux.']},
+ {g:'a',ic:'bolt',t:'Un imprévu',lib:'Réparation chaudière',m:'420,00',cat:['Entretien et bricolage','Voiture et déplacements','Santé'],cpt:JOINT,tips:['Sa catégorie habituelle, même si c\'est gros.','Payé sur l\'épargne perso de l\'un de vous pour le foyer : « Avance de ».']}
+];
+S.forEach((s,i)=>s.id=i);
+
+{const n=document.getElementById('refnote');n.style.setProperty('--c',REF?'var(--accent)':'var(--warn)');n.querySelector('span').textContent=REF?'Personnalisé avec vos comptes, projets et catégories, lus dans ce navigateur.':'Exemples génériques. Ouvrez d\'abord vos données dans le tableau de bord : vos comptes et projets apparaîtront ici.'}
+
+/* ---------- maquette de ligne ---------- */
+const COLS=[['d','Date'],['l','Libellé'],['m','Montant'],['c','Catégorie'],['a','Compte'],['v','Avance de'],['p','Projet'],['j','Justif.']];
+function today(){const d=new Date();return d.toLocaleDateString('fr-FR')}
+function rowHtml(s,partial){
+  const v={d:today(),l:s.lib,m:s.m,c:s.cat[0],a:s.cpt,v:s.av||'',p:s.prj||'',j:s.j||''};
+  const k=s.k||{};
+  const cell=key=>{let val=v[key];if(partial&&!partial.includes(key))val='';
+    let inner=val?esc(val):'';
+    if(key==='m'&&val&&val.startsWith('-'))inner=`<span class="neg">${esc(val.replace('-','−'))}</span>`;
+    if(key==='c'&&val)inner=`<span class="cat" style="--c:${FAM[CF[val]]||FAM.int}">${esc(val)}</span>`;
+    const cls=[k[key]&&val?'key':'',val?'':'empty'].join(' ');
+    return `<td class="${cls}"${k[key]&&val?` title="${esc(k[key])}"`:''}>${inner||'·'}</td>`};
+  return `<thead><tr><th class="n"></th>${COLS.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody><tr><td class="n">1130</td>${COLS.map(c=>cell(c[0])).join('')}</tr></tbody>`;
+}
+
+/* ---------- en-tête : la ligne qui se remplit ---------- */
+const HERO=[0,2,15];let hi=0;
+function heroShow(idx,animate){
+  const s=S[HERO[idx]];$('#heroLabel').textContent=s.t.toLowerCase();
+  const order=['d','l','m','c','a','v','p','j'];
+  if(!animate||matchMedia('(prefers-reduced-motion: reduce)').matches){$('#heroRow').innerHTML=rowHtml(s);return}
+  let n=0;const step=()=>{n++;$('#heroRow').innerHTML=rowHtml(s,order.slice(0,n));if(n<order.length)setTimeout(step,260)};step();
+}
+heroShow(0,false);
+setInterval(()=>{if(document.hidden)return;hi=(hi+1)%HERO.length;heroShow(hi,true)},5200);
+
+/* ---------- Ça m'arrive ---------- */
+let G='all',SEL=0;
+function tiles(){
+  const q=$('#q').value.trim().toLowerCase();
+  const list=S.filter(s=>(G==='all'||s.g===G)&&(!q||(s.t+' '+s.lib+' '+s.cat.join(' ')+' '+(s.tips||[]).join(' ')).toLowerCase().includes(q)));
+  $('#tiles').innerHTML=list.map(s=>`<button class="tile" data-id="${s.id}" aria-pressed="${s.id===SEL}" style="--c:${FAM[CF[s.cat[0]]]||FAM.int}"><span class="ico">${ico(s.ic)}</span><span>${esc(s.t)}</span></button>`).join('')||'<p class="lead">Rien ne correspond. Essayez « courses », « travaux » ou « impôts ».</p>';
+}
+function detail(){
+  const s=S[SEL],k=s.k||{};
+  const lab={m:'Montant',c:'Catégorie',a:'Compte',v:'Avance de',p:'Projet',j:'Justificatif'};
+  const val={m:s.m.replace('-','−')+' €',c:s.cat.join(' ou '),a:s.cpt===JOINT&&!k.a?'Le compte qui a payé':s.cpt,v:s.av?s.av+' (la personne concernée)':'Vide',p:s.prj||'Vide',j:s.j||'—'};
+  const showP=!!s.prj||s.g==='m',showV=!!s.av;
+  $('#detail').innerHTML=`
+   <div style="display:grid;gap:6px"><p class="eyebrow">${{q:'Le quotidien',m:'Maison et travaux',a:'Moment de l\'année'}[s.g]}</p><h3>${esc(s.t)}</h3></div>
+   <div class="ticket"><b>${esc(s.lib)}</b><b class="${s.m.startsWith('-')?'neg':''}">${esc(s.m.replace('-','−'))} €</b></div>
+   <dl class="mini">${['c','m','a','v','p','j'].filter(x=>x!=='j'||s.j).filter(x=>x!=='p'||showP).map(x=>`<dt>${lab[x]}</dt><dd class="${k[x]?'key':''}">${esc(val[x])}</dd>`).join('')}</dl>
+   ${Object.keys(k).length?`<ul class="tips">${Object.entries(k).map(([x,t])=>`<li><span><b>${lab[x]} :</b> ${esc(t)}</span></li>`).join('')}${(s.tips||[]).map(t=>`<li><span>${esc(t)}</span></li>`).join('')}</ul>`:`<ul class="tips">${(s.tips||[]).map(t=>`<li><span>${esc(t)}</span></li>`).join('')}</ul>`}
+   <div class="scroll sheet"><table class="row">${rowHtml(s)}</table></div>
+   <form class="prep" id="prep" autocomplete="off">
+     <h3>Préparer ma ligne</h3>
+     <div class="grid">
+       <label for="p-date">Date<input id="p-date" value="${today()}"></label>
+       <label for="p-m">Montant (€)<input id="p-m" value="${esc(s.m)}" inputmode="decimal"></label>
+       <label for="p-lib" style="grid-column:1/-1">Libellé<input id="p-lib" value="${esc(s.lib)}"></label>
+       <label for="p-cat">Catégorie<select id="p-cat">${s.cat.map(c=>`<option>${esc(c)}</option>`).join('')}</select></label>
+       <label for="p-cpt">Compte<select id="p-cpt">${ACCOUNTS.map(a=>`<option ${a===s.cpt?'selected':''}>${esc(a)}</option>`).join('')}</select></label>
+       ${showV?`<label for="p-av">Avance de<select id="p-av">${PEOPLE.map(a=>`<option ${a===s.av?'selected':''}>${esc(a)}</option>`).join('')}</select></label>`:''}
+       ${showP?`<label for="p-prj">Projet<select id="p-prj"><option value=""></option>${PROJECTS.map(p=>`<option ${p===s.prj?'selected':''}>${esc(p)}</option>`).join('')}</select></label>`:''}
+     </div>
+     <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn" type="submit">Copier la ligne</button><span class="copied" id="copied" hidden>Copiée. Collez-la dans la colonne A de la première ligne vide du Journal.</span></div>
+     <textarea class="fallback" id="fallback" rows="2" hidden aria-label="Ligne à copier"></textarea>
+   </form>`;
+  $('#prep').addEventListener('submit',e=>{e.preventDefault();
+    const v=id=>{const el=$('#'+id);return el?el.value.trim():''};
+    const line=[v('p-date'),v('p-lib'),v('p-m').replace(/\s/g,''),v('p-cat'),v('p-cpt'),v('p-av'),v('p-prj'),s.j||'',''].join('\t');
+    const ok=()=>{$('#copied').hidden=false;$('#fallback').hidden=true};
+    const ko=()=>{const t=$('#fallback');t.hidden=false;t.value=line;t.focus();t.select();$('#copied').hidden=false;$('#copied').textContent='Sélectionnée : copiez-la (Ctrl+C), puis collez-la en colonne A du Journal.'};
+    try{navigator.clipboard.writeText(line).then(ok,ko)}catch(err){ko()}
+  });
+}
+document.querySelector('.filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;G=b.dataset.g;document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));tiles()});
+$('#q').addEventListener('input',tiles);
+$('#tiles').addEventListener('click',e=>{const b=e.target.closest('.tile');if(!b)return;SEL=+b.dataset.id;tiles();detail();if(matchMedia('(max-width:860px)').matches)$('#detail').scrollIntoView({behavior:'smooth',block:'start'})});
+tiles();detail();
+
+/* ---------- Avance ou pas ? ---------- */
+const TREE={
+ q1:{q:'Cette dépense profite au foyer, pas seulement à vous ?',yes:'q2',no:'perso',lbl:'Pour le foyer'},
+ q2:{q:'Elle est payée avec l\'argent commun (compte joint) ?',yes:'commun',no:'q3',lbl:'Argent commun'},
+ q3:{q:'Vous êtes d\'accord tous les deux pour que le foyer la rembourse ?',yes:'avance',no:'contrib',lbl:'À rembourser'},
+ perso:{v:'Dépense perso',c:'var(--f-vie)',t:'Catégorie '+PERSO.join(' ou ')+', votre compte, « Avance de » vide.'},
+ commun:{v:'Rien à signaler',c:'var(--f-int)',t:'La catégorie de la dépense, le compte joint, « Avance de » vide.'},
+ avance:{v:'C\'est une avance',c:'var(--accent)',t:'Compte = votre compte ou livret, « Avance de » = vous. Pour des travaux, ajoutez le projet. Le reste dû apparaît dans l\'onglet Avances.'},
+ contrib:{v:'C\'est une contribution',c:'var(--f-log)',t:'Votre compte, « Avance de » vide. Pour des travaux, la colonne Contrôle affichera « Avance à signaler ? » : vous pouvez l\'ignorer.'}
+};
+let hist=['q1'];
+function tree(){
+  const cur=hist[hist.length-1],n=TREE[cur],depth=['q1','q2','q3'];
+  const done=n.v?3:depth.indexOf(cur);
+  $('#qcard').innerHTML=`<div class="steps">${[0,1,2].map(i=>`<i class="${i<done||(n.v&&i<3)?'on':''}"></i>`).join('')}</div>`+
+   (n.q?`<p class="q">${esc(n.q)}</p><div class="yn"><button class="btn" data-a="yes">Oui</button><button class="btn ghost" data-a="no">Non</button></div>`
+       :`<div class="verdict" style="--c:${n.c}"><b>${esc(n.v)}</b>${esc(n.t)}</div>`)+
+   (hist.length>1?`<button class="reset" data-a="restart">Recommencer</button>`:'');
+  const steps=[];for(let i=0;i<hist.length-1;i++){const a=hist[i],b=hist[i+1];steps.push(`<div>${esc(TREE[a].lbl)} ?<em>${TREE[a].yes===b?'Oui':'Non'}</em></div>`)}
+  $('#qpath').innerHTML=steps.length?steps.join(''):`<div style="color:var(--mute)">Vos réponses s'afficheront ici.</div><div style="color:var(--mute)">Exemple : l'un de vous paie le parquet avec son livret, à rembourser à la vente → c'est une avance.</div>`;
+}
+$('#qcard').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;if(a==='restart'){hist=['q1']}else{hist.push(TREE[hist[hist.length-1]][a])}tree()});
+tree();
+
+/* ---------- L'année ---------- */
+const MN=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MS=['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
+const Y=[
+ [{i:'shield',c:'var(--f-log)',h:'Assurance habitation et autos',p:'Souvent annuelle en janvier, catégorie Assurances.'},{i:'car',c:'var(--f-tra)',h:'Révision de la voiture',p:'Voiture et déplacements.'},{i:'sun',c:'var(--f-vac)',h:'Acompte de la location d\'été',p:'Vacances et week-ends.'},{i:'doc',c:'var(--f-rev)',h:'Avance de crédit d\'impôt',p:'Mi-janvier, en positif : Impôts : remboursements et crédits.'},{i:'star',c:'var(--accent)',h:'Nouvelle année',p:'Synthèse : changer l\'année en haut. Budget : revoir les douze mois. Patrimoine : soldes au 1er janvier.'}],
+ [{i:'snow',c:'var(--f-vac)',h:'Vacances d\'hiver',p:'Ski, forfaits, location : tout en Vacances et week-ends.'}],
+ [{i:'house',c:'var(--accent)',h:'Point trimestriel',p:'Soldes des comptes, budget, hypothèses de la vente.'}],
+ [{i:'sun',c:'var(--f-vac)',h:'Vacances de printemps',p:'Vacances et week-ends.'},{i:'note',c:'var(--f-abo)',h:'Abonnements annuels',p:'Abonnements. On les garde ?'}],
+ [{i:'doc',c:'var(--f-imp)',h:'Déclaration de revenus',p:'Rien à saisir. Réunir les attestations : PER, emploi à domicile, garde, dons, prêt familial.'}],
+ [{i:'pool',c:'var(--f-log)',h:'Remise en route de la piscine',p:'Produits et petit matériel : Entretien et bricolage.'}],
+ [{i:'sun',c:'var(--f-vac)',h:'Vacances d\'été',p:'Solde de la location et tout ce qui se passe sur place.'},{i:'doc',c:'var(--f-rev)',h:'Remboursement d\'impôt',p:'S\'il arrive : Impôts : remboursements et crédits. Ne pas le dépenser d\'avance.'},{i:'house',c:'var(--accent)',h:'Point trimestriel',p:'Soldes, budget, vente.'}],
+ [{i:'sun',c:'var(--f-vac)',h:'Suite des vacances',p:'Vacances et week-ends.'}],
+ [{i:'school',c:'var(--f-enf)',h:'La rentrée',p:'Inscriptions, fournitures, bus : Enfants. Cantine : Garde et scolarité.'},{i:'doc',c:'var(--f-imp)',h:'Régularisation d\'impôt',p:'Impôt sur le revenu.'}],
+ [{i:'house',c:'var(--f-imp)',h:'Taxe foncière',p:'Une par bien possédé au 1er janvier.'},{i:'fire',c:'var(--f-log)',h:'Bois et ramonage',p:'Énergie. Le ramonage du poêle est obligatoire.'},{i:'house',c:'var(--accent)',h:'Point trimestriel',p:'Soldes, budget, vente.'}],
+ [{i:'swap',c:'var(--f-int)',h:'Préparer janvier',p:'Assurance, révision et acompte arrivent ensemble : vérifier le virement de lissage dans l\'Échéancier.'}],
+ [{i:'gift',c:'var(--f-vie)',h:'Noël',p:'Cadeaux ; le repas de fête en Alimentation. Budget de décembre dans l\'onglet Budget.'},{i:'house',c:'var(--f-prj)',h:'31 décembre',p:'Un logement à vendre encore meublé au 1er janvier paie la taxe d\'habitation de résidence secondaire : le vider avant.'}]
+];
+const NOW=new Date().getMonth();let MSEL=NOW;
+function year(){
+  $('#months').innerHTML=Y.map((ev,i)=>`<button class="month" data-m="${i}" aria-pressed="${i===MSEL}">${i===NOW?'<span class="now">Ce mois-ci</span>':''}<b>${MS[i]}</b><span class="dots">${ev.map(e=>`<i style="--c:${e.c}">${ico(e.i)}</i>`).join('')}</span></button>`).join('');
+  $('#mdetail').innerHTML=`<h3>${MN[MSEL]}</h3>`+Y[MSEL].map(e=>`<div class="ev"><span class="ico" style="--c:${e.c}">${ico(e.i)}</span><div><h4>${esc(e.h)}</h4><p>${esc(e.p)}</p></div></div>`).join('');
+}
+$('#months').addEventListener('click',e=>{const b=e.target.closest('.month');if(!b)return;MSEL=+b.dataset.m;year()});
+year();
+
+/* ---------- Rituels ---------- */
+const R=[
+ {k:'w',time:'10',unit:'min / semaine',h:'Chaque semaine',items:['Saisir les mouvements depuis l\'appli de chaque banque','Filtrer la colonne Contrôle et la vider']},
+ {k:'m',time:'20',unit:'min / mois, à deux',h:'Chaque mois',items:['Regarder le tableau de bord du mois','Décider pour chaque catégorie « Dépassé »','Vider « À catégoriser »','Vérifier les restes dus dans Avances','Échéancier : cocher le passé, regarder 3 mois devant','Reporter les devis signés dans Projets']},
+ {k:'t',time:'3',unit:'fois par an',h:'Chaque trimestre',items:['Mettre à jour les soldes dans Patrimoine','Retoucher le budget','Mettre à jour l\'onglet Vente']},
+ {k:'j',time:'1',unit:'fois par an',h:'En janvier',items:['Synthèse : passer à la nouvelle année','Budget : reste prévu positif','Échéancier : les dates de l\'année','Patrimoine : soldes au 1er janvier']}
+];
+let RS=store.get('bonne-ligne-rituels',{});
+function rituals(){
+  $('#rituals').innerHTML=R.map(r=>{const st=RS[r.k]||[],n=r.items.filter((_,i)=>st[i]).length;
+    return `<div class="ritual"><div class="time">${r.time} <small>${r.unit}</small></div><h3>${r.h}</h3><div class="bar" aria-hidden="true"><i style="width:${n/r.items.length*100}%"></i></div>
+    ${r.items.map((t,i)=>`<label class="check" for="r-${r.k}-${i}"><input type="checkbox" id="r-${r.k}-${i}" data-r="${r.k}" data-i="${i}" ${st[i]?'checked':''}><span>${esc(t)}</span></label>`).join('')}
+    <button class="reset" data-reset="${r.k}">Remettre à zéro</button></div>`}).join('');
+}
+$('#rituels').addEventListener('change',e=>{const c=e.target.closest('input[data-r]');if(!c)return;(RS[c.dataset.r]=RS[c.dataset.r]||[])[+c.dataset.i]=c.checked;store.set('bonne-ligne-rituels',RS);rituals();document.getElementById(c.id).focus()});
+$('#rituels').addEventListener('click',e=>{const b=e.target.closest('[data-reset]');if(!b)return;RS[b.dataset.reset]=[];store.set('bonne-ligne-rituels',RS);rituals()});
+rituals();
+
+/* ---------- Quiz ---------- */
+const QZ=[
+ {q:'La CPAM vous rembourse 19 €.',a:['+19 € en Autres revenus','−19 € en Santé','+19 € en Santé'],r:1,e:'Un remboursement s\'écrit en négatif dans la catégorie d\'origine : la santé coûte ce qu\'elle coûte vraiment.'},
+ {q:'Vous virez 300 € sur le compte joint pour lisser les charges.',a:['Épargne disponible','Virement interne','Logement'],r:1,e:'L\'argent change de compte sans quitter le foyer. Le compter en épargne gonflerait l\'épargne pour rien.'},
+ {q:`${P2} paie le parquet (3 400 €) avec son livret ; le foyer remboursera à la vente.`,a:['Travaux, compte joint, Avance de vide',`Travaux, compte ${LIVRET}, Avance de : ${P2}`,'Épargne disponible en négatif'],r:1,e:'Le compte qui a payé et la personne à rembourser : l\'onglet Avances fait le reste.'},
+ {q:'12 € de vis pour refixer une étagère.',a:['Travaux, avec un projet','Entretien et bricolage','Mobilier et installation'],r:1,e:'Hors projet, c\'est l\'entretien courant de la maison.'},
+ {q:'Les courses au supermarché de la station de ski.',a:['Alimentation','Vacances et week-ends','Sorties et loisirs'],r:1,e:'Tout ce qui se passe sur place va en Vacances, pour voir le vrai coût du séjour.'},
+ {q:'Le notaire vous vire le produit de la vente de l\'ancienne maison.',a:['Autres revenus',`Virement interne, projet ${SALE}`,'Épargne disponible'],r:1,e:'Ce n\'est pas un revenu : la maison se transforme en argent. Le compter en revenu fausserait toute l\'année.'},
+ {q:`${P1} paie le resto du dimanche avec sa carte, sans rien attendre en retour.`,a:[`Restos, son compte, Avance de vide`,`Restos, Avance de : ${P1}`,PERSO[0]],r:0,e:'Payer pour le foyer avec sa carte est une contribution. « Avance de » seulement si on attend un remboursement.'},
+ {q:'La colonne Contrôle affiche « Doublon possible » sur deux places de concert au même prix.',a:['On supprime une ligne','On différencie les libellés (« billet 1 », « billet 2 »)','On laisse le message'],r:1,e:'Les deux sont réelles : un libellé différent éteint le voyant.'},
+ {q:'L\'avance de crédit d\'impôt arrive mi-janvier.',a:['Impôts : remboursements et crédits','Impôt sur le revenu, en négatif','Emploi à domicile, en négatif'],r:0,e:'Toutes les rentrées venant des impôts ont leur catégorie de revenu.'}
+];
+let qi=0,ans=[];
+function quiz(){
+  if(qi>=QZ.length){$('#qz').innerHTML=`<p class="num">Terminé</p><p class="q">Vous avez répondu aux ${QZ.length} questions.</p><p class="explain">Rejouez à deux : chacun répond, celui qui se trompe saisit les tickets de la semaine.</p><button class="btn" id="again">Rejouer</button>`;$('#again').onclick=()=>{qi=0;ans=[];quiz()};score();return}
+  const x=QZ[qi],done=ans[qi]!=null;
+  $('#qz').innerHTML=`<p class="num">Question ${qi+1} sur ${QZ.length}</p><p class="q">${esc(x.q)}</p>
+   <div class="answers">${x.a.map((t,i)=>`<button class="answer ${done?(i===x.r?'good':(i===ans[qi]?'bad':'')):''}" data-i="${i}" ${done?'disabled':''}>${esc(t)}</button>`).join('')}</div>
+   ${done?`<p class="explain"><b>${ans[qi]===x.r?'Bien vu.':'Pas tout à fait.'}</b> ${esc(x.e)}</p><div><button class="btn" id="next">${qi+1<QZ.length?'Question suivante':'Voir le score'}</button></div>`:''}`;
+  if(done)$('#next').onclick=()=>{qi++;quiz();$('#qz').querySelector('button')?.focus()};
+  score();
+}
+function score(){const g=ans.filter((a,i)=>a===QZ[i].r).length,n=ans.filter(a=>a!=null).length;
+  const msg=n<QZ.length?'Une bonne réponse = une ligne juste dans le Journal.':g===QZ.length?'Incollables. Le Journal est entre de bonnes mains.':g>=6?'Très bien. Relisez les explications des questions ratées.':'Gardez ce guide sous la main pour les premières semaines.';
+  $('#score').innerHTML=`<p class="eyebrow" style="color:inherit;opacity:.7">Score</p><p class="big">${g}<small> / ${QZ.length}</small></p><div class="pips">${QZ.map((q,i)=>`<i class="${ans[i]==null?'':ans[i]===q.r?'g':'b'}"></i>`).join('')}</div><p>${msg}</p>`}
+$('#qz').addEventListener('click',e=>{const b=e.target.closest('.answer');if(!b||b.disabled)return;ans[qi]=+b.dataset.i;quiz()});
+quiz();
+
+/* ---------- Voyant rouge ---------- */
+const AL=[
+ ['Doublon possible','Même date, même montant, même libellé deux fois.','Supprimez la ligne en trop, ou différenciez le libellé si les deux sont réelles.'],
+ ['Catégorie à revoir','La catégorie n\'est pas dans la liste (tapée à la main ou renommée).','Choisissez-la dans le menu.'],
+ ['À catégoriser.','La ligne attend sa catégorie.','Choisissez la bonne catégorie.'],
+ ['Compte manquant.','Personne ne sait d\'où vient l\'argent.','Choisissez le compte qui a payé.'],
+ ['Revenu négatif ?','Un revenu a été saisi avec un signe moins.','Corrigez le signe.'],
+ ['Avance à signaler ?','Des travaux payés depuis un compte personnel, sans « Avance de ».','Remplissez « Avance de » si le foyer doit rembourser ; sinon, ignorez.'],
+ ['Projet manquant.','Travaux, mobilier ou frais sans projet.','Choisissez le projet dans le menu.'],
+ ['Qui est remboursé ?','Un remboursement d\'avance sans nom.','Mettez la personne remboursée dans « Avance de ».']
+];
+$('#alerts').innerHTML=AL.map(a=>`<div class="alert"><span class="pill">${esc(a[0])}</span><p class="why">${esc(a[1])}</p><p class="fix">${esc(a[2])}</p></div>`).join('');
+</script>
+
+</body>
+</html>
